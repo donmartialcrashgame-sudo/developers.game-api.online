@@ -110,7 +110,7 @@
     GROUPS.forEach(function(g){
       var active=g.items.some(function(x){return x[3]===key;});
       html += '<section class="nav-section '+(active?"is-active":"")+'" data-group="'+g.id+'">';
-      html += '<button class="nav-section-head" type="button"><span class="nav-section-icon">'+g.icon+'</span><span class="nav-section-name">'+g.label+'</span><span class="nav-section-chevron">⌄</span></button>';
+      html += '<button class="nav-section-head" type="button"><span class="nav-section-chevron">›</span><span class="nav-section-name">'+g.label+'</span><span class="nav-section-icon">'+g.icon+'</span></button>';
       html += '<div class="nav-submenu '+(active?"open":"")+'">';
       g.items.forEach(function(x){
         html += '<a class="nav-link '+(key===x[3]?"active":"")+'" href="'+x[1]+'" title="'+esc(x[0])+'"><span class="nav-link-icon">'+x[2]+'</span><span class="nav-link-text">'+esc(x[0])+'</span>'+(key===x[3]?'<i class="active-pulse"></i>':"")+'</a>';
@@ -139,10 +139,15 @@
         '</div></div>'+
         '<div class="glass-card health-card"><div class="card-head"><div><span class="card-kicker">SYSTEM</span><h3>Service health</h3><p>Everything is being monitored</p></div><span class="health-badge"><i></i> All systems</span></div><div class="health-visual"><div class="health-score">99<span>.98</span><small>%</small></div><div class="health-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="health-footer"><span>API</span><b>Operational</b><span>WebSocket</span><b>Connected</b></div></div>'+
       '</section>'+
+      liveMonitor()+
       '<section class="glass-card tools-card"><div class="card-head"><div><span class="card-kicker">WORKSPACE</span><h3>Developer tools</h3><p>Jump into the tools you use most</p></div></div><div class="tool-grid">'+
         tool("⌘","API Keys","Create, rotate and revoke credentials","keys.html","blue")+tool("⌁","WebSocket","Inspect live real-time events","websocket.html","purple")+tool("◉","Crash Game","Monitor live crash rounds","crash.html","pink")+tool("▤","Documentation","Learn the integration flow","documentation.html","green")+
       '</div></section>'+
       '</div>';
+  }
+
+  function liveMonitor(){
+    return '<section class="live-monitor glass-card"><div class="live-monitor-head"><div><span class="card-kicker">LIVE MONITOR</span><h3>Crash round stream</h3><p>Real-time game activity, connection state and multiplier movement</p></div><span class="stream-status"><i></i> LIVE</span></div><div class="monitor-stage"><div class="monitor-grid"></div><div class="monitor-line"></div><div class="monitor-core"><span id="live-multiplier">2.47x</span><small>ROUND #125</small></div><div class="monitor-dot d1"></div><div class="monitor-dot d2"></div><div class="monitor-dot d3"></div><div class="monitor-chip mc1">BETTING <b>OPEN</b></div><div class="monitor-chip mc2">WEBSOCKET <b>CONNECTED</b></div><div class="monitor-chip mc3">LATENCY <b>42ms</b></div></div><div class="monitor-footer"><div><span>ROUND</span><b>#125</b></div><div><span>STATUS</span><b class="live-green">RUNNING</b></div><div><span>MULTIPLIER</span><b id="live-status-multiplier">2.47x</b></div><div><span>CONNECTION</span><b class="live-green">STABLE</b></div></div></section>';
   }
 
   function metric(label,value,sub,icon,cls,trend){
