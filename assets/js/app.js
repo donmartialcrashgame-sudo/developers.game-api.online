@@ -1,82 +1,251 @@
-(function(){
-"use strict";
-var NAV=[
-["MAIN",[["Dashboard","◫","dashboard"],["Overview","⌂","overview"],["API Usage","▥","usage"],["Analytics","◒","analytics"]]],
-["API",[["API Keys","⌘","keys"],["Documentation","▤","documentation"],["Endpoints","↗","endpoints"],["WebSocket","⌁","websocket"],["Request Logs","☷","logs"],["API Status","●","status"]]],
-["GAMES",[["Crash Game","◉","crash"],["Live Rounds","◌","live"],["Round History","◴","history"],["Game Settings","⚙","game-settings"]]],
-["SETUP",[["Security","◇","security"],["Authentication","◈","authentication"],["API Configuration","⚙","configuration"],["Webhooks","↗","webhooks"],["Notifications","♢","notifications"],["Developer Settings","☷","developer-settings"]]],
-["ACCOUNT",[["My Profile","○","profile"],["Subscription","▣","subscription"],["Billing","◫","billing"],["Usage Limits","▥","limits"]]],
-["SYSTEM",[["System Status","●","system-status"],["Support","?","support"],["Help Center","?","help"]]]
-];
-var META={
-dashboard:["Dashboard","Your real-time Game API developer workspace"],
-overview:["Overview","A visual summary of your developer environment"],
-usage:["API Usage","Requests, quota and traffic"],
-analytics:["Analytics","API activity and trends"],
-keys:["API Keys","Manage application credentials"],
-documentation:["Documentation","Build with Game API"],
-endpoints:["Endpoints","Explore API resources"],
-websocket:["WebSocket","Real-time connection tools"],
-logs:["Request Logs","Inspect API requests"],
-status:["API Status","Live service health"],
-crash:["Crash Game","Live crash-game tools"],
-live:["Live Rounds","Real-time round monitor"],
-"round-history":["Round History","Completed round activity"],
-"game-settings":["Game Settings","Game configuration"],
-security:["Security","Protect your account and credentials"],
-authentication:["Authentication","Authentication configuration"],
-configuration:["API Configuration","Runtime controls"],
-webhooks:["Webhooks","Event delivery configuration"],
-notifications:["Notifications","Platform notifications"],
-"developer-settings":["Developer Settings","Workspace preferences"],
-profile:["My Profile","Your account profile"],
-subscription:["Subscription","Plan and access"],
-billing:["Billing","Payments and invoices"],
-limits:["Usage Limits","Quota and usage controls"],
-"system-status":["System Status","Platform health"],
-support:["Support","Get help from Game API"],
-help:["Help Center","Guides and support"]
-};
-function esc(v){return String(v).replace(/[&<>"']/g,function(x){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]);});}
-function current(){var p=location.pathname.split("/").pop().replace(".html","");return p||"dashboard";}
-function notify(type,title,msg){
- var host=document.getElementById("alerts");if(!host){host=document.createElement("div");host.id="alerts";host.className="alerts";document.body.appendChild(host);}
- var n=document.createElement("div");n.className="alert "+type;n.innerHTML="<b>"+esc(title)+"</b><span>"+esc(msg||"")+"</span><button>×</button>";n.querySelector("button").onclick=function(){n.remove()};host.appendChild(n);setTimeout(function(){if(n.parentNode)n.remove()},6000);
-}
-function user(){try{return JSON.parse(localStorage.getItem("gameapi_user"))||{};}catch(e){return{};}}
-function sidebar(key){
- var out="";
- NAV.forEach(function(group){
-  out+='<div class="nav-group"><div class="nav-label">'+group[0]+"</div>";
-  group[1].forEach(function(item){out+='<a class="nav-item '+(key===item[2]?"active":"")+'" href="'+item[2]+'.html"><span class="nav-icon">'+item[1]+"</span><span>"+item[0]+"</span></a>";});
-  out+="</div>";
- });
- return out;
-}
-function pageContent(key){
- var m=META[key]||META.dashboard;
- if(key==="dashboard") return '<section class="hero"><div><span class="eyebrow">GAME API • DEVELOPER CONSOLE</span><h2>Build faster with Game API <span>⚡</span></h2><p>Manage API keys, authentication, real-time WebSocket connections, crash-game data and developer settings from one workspace.</p><div class="hero-actions"><a href="api-keys.html">Manage API Keys →</a><a href="documentation.html" class="ghost">Open Documentation</a></div></div><div class="hero-orbit"><div class="orbit orbit1"></div><div class="orbit orbit2"></div><div class="core">G</div></div></section><section class="kpi-grid"><div class="kpi blue"><div class="kpi-icon">↗</div><div><small>Requests this month</small><strong>12,840</strong><span>Live data</span></div></div><div class="kpi green"><div class="kpi-icon">●</div><div><small>API availability</small><strong>99.98%</strong><span>Operational</span></div></div><div class="kpi purple"><div class="kpi-icon">⌘</div><div><small>Active API keys</small><strong>3</strong><span>Credentials</span></div></div><div class="kpi orange"><div class="kpi-icon">◫</div><div><small>Monthly usage</small><strong>87%</strong><span>Quota consumed</span></div></div></section><section class="content-grid"><div class="panel"><div class="panel-head"><div><h3>Live API activity</h3><span>Recent developer requests</span></div><a href="logs.html">View all →</a></div><div class="activity"><div><i class="dot green-dot"></i><b>/api/crash/current</b><small>200 OK</small></div><div><i class="dot blue-dot"></i><b>/api/crash/history</b><small>200 OK</small></div><div><i class="dot purple-dot"></i><b>/realtime</b><small>Connected</small></div><div><i class="dot green-dot"></i><b>/api/status</b><small>200 OK</small></div></div></div><div class="panel"><div class="panel-head"><div><h3>Setup</h3><span>Configure your workspace</span></div></div><div class="setup"><a href="security.html">◇ <b>Security</b><em>→</em></a><a href="authentication.html">◈ <b>Authentication</b><em>→</em></a><a href="webhooks.html">↗ <b>Webhooks</b><em>→</em></a><a href="notifications.html">♢ <b>Notifications</b><em>→</em></a></div></div></section><section class="panel feature-panel"><div class="panel-head"><div><h3>Game API services</h3><span>Developer tools</span></div></div><div class="feature-grid"><a href="crash.html"><span class="feature-icon pink">◉</span><b>Crash Game</b><small>Live game tools</small></a><a href="websocket.html"><span class="feature-icon blue2">⌁</span><b>WebSocket</b><small>Real-time events</small></a><a href="documentation.html"><span class="feature-icon purple2">▤</span><b>Documentation</b><small>Integration guides</small></a><a href="system-status.html"><span class="feature-icon green2">●</span><b>System Status</b><small>Service health</small></a></div></section>';
- return '<section class="section-hero"><span class="eyebrow">GAME API</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></section><section class="content-grid"><div class="panel"><div class="panel-head"><div><h3>'+esc(m[0])+' workspace</h3><span>This module is connected to the shared developer console.</span></div><span class="live-pill"><i></i> Ready</span></div><div class="tool-list"><div><span class="tool-icon blue2">✦</span><div><b>Interactive module</b><small>Controls for '+esc(m[0])+' are ready.</small></div><button id="test-action">Test</button></div><div><span class="tool-icon purple2">⌁</span><div><b>Live feedback</b><small>Success and error messages appear at the top.</small></div><span class="status-tag">Enabled</span></div><div><span class="tool-icon green2">✓</span><div><b>Responsive design</b><small>Works across desktop and mobile.</small></div><span class="status-tag">Ready</span></div></div></div><div class="panel"><div class="panel-head"><div><h3>Quick controls</h3><span>Dashboard preferences</span></div></div><div class="control-card"><label>Chat position</label><div class="segmented"><button id="chat-left">Left</button><button id="chat-right">Right</button></div></div><div class="control-card"><label>Sidebar</label><button class="outline" id="collapse">Collapse / Expand</button></div></div></section>';
-}
-function boot(){
- var app=document.getElementById("app");if(!app)throw new Error("Dashboard mount #app was not found.");
- var key=current(),m=META[key]||META.dashboard,u=user(),name=u.name||"Developer",email=u.email||"developer@example.com",initial=(name.charAt(0)||"D").toUpperCase();
- app.innerHTML='<div class="dashboard-shell"><aside class="sidebar" id="sidebar"><div class="brand"><div class="brand-icon">G</div><div><b>Game API</b><small>Developer Console</small></div></div><div class="sidebar-scroll">'+sidebar(key)+'</div><div class="sidebar-bottom"><button class="chat-open" id="chat-open">◌ <span>Chat us</span></button></div></aside><main class="workspace"><header class="topbar"><button class="side-toggle" id="side-toggle" aria-label="Open menu">☰</button><div class="heading"><h1>'+esc(m[0])+'</h1><p>'+esc(m[1])+'</p></div><div class="account"><button class="account-btn" id="account-btn"><span class="avatar">'+initial+'</span><span class="account-text"><b>'+esc(name)+'</b><small>'+esc(email)+'</small></span>⌄</button><div class="account-menu" id="account-menu"><a href="profile.html">○ My Profile</a><button id="logout">↪ Logout</button></div></div></header><div class="page-wrap">'+pageContent(key)+'</div></main><div class="chat-panel" id="chat-panel"><header><b>Game API Support</b><button id="chat-close">×</button><small>Live support</small></header><div class="chat-messages" id="chat-messages"><div class="message agent">Hello! How can we help you?</div></div><form id="chat-form"><input id="chat-input" placeholder="Write a message…"><button>➤</button></form></div></div>';
- bind();notify("success","Dashboard ready","Game API developer workspace loaded successfully.");
-}
-function bind(){
- document.getElementById("side-toggle").onclick=function(){var s=document.getElementById("sidebar");if(window.innerWidth<=700){s.classList.toggle("mobile-open");var o=document.getElementById("mobile-overlay");if(s.classList.contains("mobile-open")){if(!o){o=document.createElement("div");o.id="mobile-overlay";o.className="mobile-overlay";document.body.appendChild(o);o.onclick=function(){s.classList.remove("mobile-open");o.remove();};}}else if(o)o.remove();}else{s.classList.toggle("collapsed");}};
- document.getElementById("account-btn").onclick=function(){document.getElementById("account-menu").classList.toggle("open");};
- document.getElementById("logout").onclick=function(){localStorage.removeItem("gameapi_user");notify("success","Signed out","Session cleared.");};
- document.getElementById("chat-open").onclick=function(){document.getElementById("chat-panel").classList.add("open");};
- document.getElementById("chat-close").onclick=function(){document.getElementById("chat-panel").classList.remove("open");};
- document.getElementById("chat-form").onsubmit=function(e){e.preventDefault();var i=document.getElementById("chat-input"),v=i.value.trim();if(!v)return;document.getElementById("chat-messages").insertAdjacentHTML("beforeend",'<div class="message me">'+esc(v)+'</div>');i.value="";notify("success","Message queued","Your support message was added.");};
- var t=document.getElementById("test-action");if(t)t.onclick=function(){notify("success","Module ready","The current developer module is responding correctly.");};
- var l=document.getElementById("chat-left");if(l)l.onclick=function(){document.getElementById("chat-panel").classList.add("left");notify("success","Chat moved","Support chat is now on the left.");};
- var r=document.getElementById("chat-right");if(r)r.onclick=function(){document.getElementById("chat-panel").classList.remove("left");notify("success","Chat moved","Support chat is now on the right.");};
- var c=document.getElementById("collapse");if(c)c.onclick=function(){document.getElementById("sidebar").classList.toggle("collapsed");};
-}
-window.addEventListener("error",function(e){notify("error","Page error",e.message||"Unexpected error");});
-window.addEventListener("unhandledrejection",function(e){notify("error","Operation failed",e.reason&&e.reason.message?e.reason.message:String(e.reason||"Unhandled error"));});
-document.addEventListener("DOMContentLoaded",function(){try{var loader=document.createElement("div");loader.className="page-loader";loader.innerHTML='<div><div class="loader-ring"></div><div class="loader-title">Game API</div><div class="loader-sub">Loading developer workspace…</div><div class="loader-progress"><i></i></div></div>';document.body.appendChild(loader);boot();setTimeout(function(){loader.classList.add("hide");setTimeout(function(){if(loader.parentNode)loader.remove();},350);},550);}catch(e){var a=document.getElementById("app");if(a)a.innerHTML='<div style="padding:40px;font-family:Arial"><h2>Game API could not load</h2><pre style="white-space:pre-wrap">'+esc(e.stack||e.message||e)+'</pre><button onclick="location.reload()">Reload</button></div>';notify("error","Dashboard failed to load",e.message||String(e));}});
+(function () {
+  "use strict";
+
+  var GROUPS = [
+    { id:"main", label:"MAIN", icon:"◈", items:[
+      ["Dashboard","index.html","⌂","dashboard"],
+      ["Overview","overview.html","◌","overview"],
+      ["API Usage","usage.html","▥","usage"],
+      ["Analytics","analytics.html","◒","analytics"]
+    ]},
+    { id:"api", label:"API", icon:"⌁", items:[
+      ["API Keys","keys.html","⌘","keys"],
+      ["Documentation","documentation.html","▤","documentation"],
+      ["Endpoints","endpoints.html","↗","endpoints"],
+      ["WebSocket","websocket.html","⌁","websocket"],
+      ["Request Logs","logs.html","☷","logs"],
+      ["API Status","status.html","●","status"]
+    ]},
+    { id:"games", label:"GAMES", icon:"◉", items:[
+      ["Crash Game","crash.html","◉","crash"],
+      ["Live Rounds","live.html","◌","live"],
+      ["Round History","round-history.html","◴","round-history"],
+      ["Game Settings","game-settings.html","⚙","game-settings"]
+    ]},
+    { id:"setup", label:"SETUP", icon:"◇", items:[
+      ["Security","security.html","◇","security"],
+      ["Authentication","authentication.html","◈","authentication"],
+      ["API Configuration","configuration.html","⚙","configuration"],
+      ["Webhooks","webhooks.html","↗","webhooks"],
+      ["Notifications","notifications.html","♢","notifications"],
+      ["Developer Settings","developer-settings.html","☷","developer-settings"]
+    ]},
+    { id:"account", label:"ACCOUNT", icon:"○", items:[
+      ["My Profile","profile.html","○","profile"],
+      ["Subscription","subscription.html","▣","subscription"],
+      ["Billing","billing.html","◫","billing"],
+      ["Usage Limits","limits.html","▥","limits"]
+    ]},
+    { id:"system", label:"SYSTEM", icon:"●", items:[
+      ["System Status","system-status.html","●","system-status"],
+      ["Support","support.html","?","support"],
+      ["Help Center","help.html","?","help"]
+    ]}
+  ];
+
+  var META = {
+    dashboard:["Dashboard","Your real-time developer command center"],
+    overview:["Overview","A live snapshot of your Game API workspace"],
+    usage:["API Usage","Requests, traffic and consumption"],
+    analytics:["Analytics","Performance and integration insights"],
+    keys:["API Keys","Secure credentials for your applications"],
+    documentation:["Documentation","Build and integrate with Game API"],
+    endpoints:["Endpoints","Explore available API resources"],
+    websocket:["WebSocket","Real-time connection and event tools"],
+    logs:["Request Logs","Inspect recent API activity"],
+    status:["API Status","Live platform health and availability"],
+    crash:["Crash Game","Live crash-game developer tools"],
+    live:["Live Rounds","Real-time round monitor"],
+    "round-history":["Round History","Explore completed game rounds"],
+    "game-settings":["Game Settings","Game configuration and preferences"],
+    security:["Security","Protect credentials and account access"],
+    authentication:["Authentication","Authentication and access controls"],
+    configuration:["API Configuration","Configure your integration"],
+    webhooks:["Webhooks","Event delivery and callbacks"],
+    notifications:["Notifications","Alerts and platform messages"],
+    "developer-settings":["Developer Settings","Developer workspace preferences"],
+    profile:["My Profile","Manage your developer identity"],
+    subscription:["Subscription","Plan and access"],
+    billing:["Billing","Payments and invoices"],
+    limits:["Usage Limits","Quota and request controls"],
+    "system-status":["System Status","Platform health and services"],
+    support:["Support","Get help from Game API"],
+    help:["Help Center","Guides and answers"]
+  };
+
+  function esc(v){
+    return String(v == null ? "" : v).replace(/[&<>"']/g,function(x){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[x];
+    });
+  }
+
+  function pageKey(){
+    var p = location.pathname.split("/").pop().replace(/\.html$/,"");
+    return (!p || p === "index") ? "dashboard" : p;
+  }
+
+  function getUser(){
+    try { return JSON.parse(localStorage.getItem("gameapi_user")) || {}; }
+    catch(e){ return {}; }
+  }
+
+  function notify(type,title,msg){
+    var host=document.getElementById("alerts");
+    if(!host){
+      host=document.createElement("div");
+      host.id="alerts";
+      host.className="alerts";
+      document.body.appendChild(host);
+    }
+    var n=document.createElement("div");
+    n.className="alert "+type;
+    n.innerHTML='<span class="alert-mark">'+(type==="error"?"!":type==="success"?"✓":"i")+'</span><div class="alert-copy"><b>'+esc(title)+'</b><span>'+esc(msg||"")+'</span></div><button aria-label="Close">×</button>';
+    n.querySelector("button").onclick=function(){n.remove();};
+    host.appendChild(n);
+    setTimeout(function(){if(n.parentNode)n.remove();},5500);
+  }
+
+  function renderGroups(key){
+    var html="";
+    GROUPS.forEach(function(g){
+      var active=g.items.some(function(x){return x[3]===key;});
+      html += '<section class="nav-section '+(active?"is-active":"")+'" data-group="'+g.id+'">';
+      html += '<button class="nav-section-head" type="button"><span class="nav-section-icon">'+g.icon+'</span><span class="nav-section-name">'+g.label+'</span><span class="nav-section-chevron">⌄</span></button>';
+      html += '<div class="nav-submenu '+(active?"open":"")+'">';
+      g.items.forEach(function(x){
+        html += '<a class="nav-link '+(key===x[3]?"active":"")+'" href="'+x[1]+'" title="'+esc(x[0])+'"><span class="nav-link-icon">'+x[2]+'</span><span class="nav-link-text">'+esc(x[0])+'</span>'+(key===x[3]?'<i class="active-pulse"></i>':"")+'</a>';
+      });
+      html += '</div></section>';
+    });
+    return html;
+  }
+
+  function dashboardContent(){
+    return '<div class="dashboard-home">'+
+      '<section class="hero-card">'+
+        '<div class="hero-noise"></div><div class="hero-grid"></div>'+
+        '<div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> GAME API · DEVELOPER CONSOLE</div>'+
+        '<h2>Everything you need to <span>build in real time.</span></h2>'+
+        '<p>Manage credentials, monitor requests, connect to live game events and control your developer workspace from one premium console.</p>'+
+        '<div class="hero-actions"><a href="keys.html" class="primary-btn">Manage API Keys <b>→</b></a><a href="documentation.html" class="secondary-btn">Read documentation</a></div></div>'+
+        '<div class="hero-visual"><div class="visual-glow"></div><div class="signal-ring r1"></div><div class="signal-ring r2"></div><div class="signal-ring r3"></div><div class="signal-core"><span>G</span><i></i></div><div class="float-chip chip-a">API <b>LIVE</b></div><div class="float-chip chip-b">WS <b>CONNECTED</b></div><div class="float-chip chip-c">99.98%</div></div>'+
+      '</section>'+
+      '<section class="metric-grid">'+
+        metric("REQUESTS","12,840","This month","↗","blue","↑ 12.4%"), metric("AVAILABILITY","99.98%","Platform health","●","green","Operational"), metric("API KEYS","03","Active credentials","⌘","purple","Protected"), metric("USAGE","87%","Current quota","◫","orange","13% remaining")+
+      '</section>'+
+      '<section class="dashboard-grid">'+
+        '<div class="glass-card activity-card"><div class="card-head"><div><span class="card-kicker">REAL-TIME</span><h3>API activity</h3><p>Latest requests from your workspace</p></div><a href="logs.html">View logs →</a></div><div class="activity-list">'+
+          activity("GET","/api/v1/crash/rounds","200 OK","42 ms","green")+activity("WS","/realtime","CONNECTED","Live","blue")+activity("GET","/api/v1/status","200 OK","31 ms","purple")+activity("POST","/api/v1/crash/rounds","200 OK","58 ms","green")+
+        '</div></div>'+
+        '<div class="glass-card health-card"><div class="card-head"><div><span class="card-kicker">SYSTEM</span><h3>Service health</h3><p>Everything is being monitored</p></div><span class="health-badge"><i></i> All systems</span></div><div class="health-visual"><div class="health-score">99<span>.98</span><small>%</small></div><div class="health-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div><div class="health-footer"><span>API</span><b>Operational</b><span>WebSocket</span><b>Connected</b></div></div>'+
+      '</section>'+
+      '<section class="glass-card tools-card"><div class="card-head"><div><span class="card-kicker">WORKSPACE</span><h3>Developer tools</h3><p>Jump into the tools you use most</p></div></div><div class="tool-grid">'+
+        tool("⌘","API Keys","Create, rotate and revoke credentials","keys.html","blue")+tool("⌁","WebSocket","Inspect live real-time events","websocket.html","purple")+tool("◉","Crash Game","Monitor live crash rounds","crash.html","pink")+tool("▤","Documentation","Learn the integration flow","documentation.html","green")+
+      '</div></section>'+
+      '</div>';
+  }
+
+  function metric(label,value,sub,icon,cls,trend){
+    return '<div class="metric '+cls+'"><div class="metric-icon">'+icon+'</div><div class="metric-copy"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></div><em>'+trend+'</em></div>';
+  }
+  function activity(method,path,status,time,cls){
+    return '<div class="activity-row"><span class="method '+cls+'">'+method+'</span><div class="activity-main"><b>'+path+'</b><small>'+time+' response time</small></div><span class="request-status '+cls+'">'+status+'</span><span class="row-arrow">›</span></div>';
+  }
+  function tool(icon,title,desc,href,cls){
+    return '<a class="tool-item '+cls+'" href="'+href+'"><span class="tool-icon">'+icon+'</span><span><b>'+title+'</b><small>'+desc+'</small></span><i>↗</i></a>';
+  }
+
+  function genericContent(key){
+    var m=META[key] || META.dashboard;
+    return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
+      '<section class="module-layout"><div class="glass-card module-main"><div class="card-head"><div><span class="card-kicker">READY</span><h3>'+esc(m[0])+' workspace</h3><p>Connected to the Game API developer console.</p></div><span class="health-badge"><i></i> Available</span></div><div class="module-actions"><button id="module-test" class="primary-btn">Run module check <b>→</b></button><a href="documentation.html" class="secondary-btn">Open docs</a></div><div class="module-status"><div><span>Environment</span><b>Production</b></div><div><span>Access</span><b>Authenticated</b></div><div><span>Interface</span><b>Responsive</b></div></div></div>'+
+      '<aside class="glass-card quick-panel"><div class="card-head"><div><span class="card-kicker">QUICK CONTROL</span><h3>Workspace</h3></div></div><button class="quick-control" id="chat-left">Move chat left <span>←</span></button><button class="quick-control" id="chat-right">Move chat right <span>→</span></button><button class="quick-control" id="collapse">Toggle sidebar <span>☰</span></button></aside></section></div>';
+  }
+
+  function boot(){
+    var app=document.getElementById("app");
+    if(!app) throw new Error("Dashboard mount #app was not found.");
+    var key=pageKey(), meta=META[key]||META.dashboard, u=getUser();
+    var name=u.name||"Developer", email=u.email||"developer@example.com", initial=(name.charAt(0)||"D").toUpperCase();
+
+    app.innerHTML =
+      '<div class="app-shell">'+
+        '<aside class="sidebar" id="sidebar">'+
+          '<div class="brand"><div class="brand-mark"><span>G</span><i></i></div><div class="brand-copy"><b>Game API</b><small>Developer Console</small></div><button class="sidebar-close" id="sidebar-close">×</button></div>'+
+          '<div class="workspace-status"><span><i></i> PLATFORM ONLINE</span><b>v1.0</b></div>'+
+          '<nav class="sidebar-nav">'+renderGroups(key)+'</nav>'+
+          '<div class="sidebar-bottom"><button class="chat-launch" id="chat-open"><span class="chat-icon">◌</span><span><b>Chat with us</b><small>Support is available</small></span><i>→</i></button><div class="sidebar-mini"><span>SECURE WORKSPACE</span><i>●</i></div></div>'+
+        '</aside>'+
+        '<div class="mobile-backdrop" id="mobile-backdrop"></div>'+
+        '<main class="workspace">'+
+          '<header class="topbar">'+
+            '<div class="top-left"><button class="menu-btn" id="menu-btn" aria-label="Open navigation"><span></span><span></span><span></span></button><div class="breadcrumbs"><span>Developer Console</span><b>/</b><strong>'+esc(meta[0])+'</strong></div></div>'+
+            '<div class="top-right"><button class="top-icon" title="Notifications">♢<i></i></button><div class="account"><button class="account-btn" id="account-btn"><span class="avatar">'+initial+'</span><span class="account-meta"><b>'+esc(name)+'</b><small>'+esc(email)+'</small></span><span class="account-chevron">⌄</span></button><div class="account-menu" id="account-menu"><div class="account-menu-head"><span class="avatar small">'+initial+'</span><div><b>'+esc(name)+'</b><small>'+esc(email)+'</small></div></div><a href="profile.html">○ My Profile <span>→</span></a><a href="subscription.html">▣ Subscription <span>→</span></a><button id="logout">↪ Sign out <span>→</span></button></div></div></div>'+
+          '</header>'+
+          '<div class="page-content"><div class="page-title-row"><div><span class="page-kicker">GAME API / '+esc(meta[0].toUpperCase())+'</span><h1>'+esc(meta[0])+'</h1><p>'+esc(meta[1])+'</p></div><div class="page-live"><i></i> Live platform</div></div>'+
+            (key==="dashboard"?dashboardContent():genericContent(key))+
+          '</div>'+
+        '</main>'+
+        '<div class="chat-panel" id="chat-panel"><div class="chat-head"><div><span class="chat-avatar">G</span><div><b>Game API Support</b><small><i></i> Usually replies quickly</small></div></div><button id="chat-close">×</button></div><div class="chat-body" id="chat-messages"><div class="bubble agent">Hello! Welcome to Game API support. How can we help you today?</div></div><form id="chat-form"><input id="chat-input" placeholder="Write a message…" autocomplete="off"><button>➤</button></form></div>'+
+      '</div>';
+
+    bind(key);
+  }
+
+  function bind(key){
+    document.querySelectorAll(".nav-section-head").forEach(function(btn){
+      btn.addEventListener("click",function(){
+        var section=btn.parentElement, submenu=section.querySelector(".nav-submenu");
+        var open=submenu.classList.contains("open");
+        document.querySelectorAll(".nav-submenu.open").forEach(function(x){if(x!==submenu)x.classList.remove("open");});
+        submenu.classList.toggle("open",!open);
+        section.classList.toggle("is-open",!open);
+      });
+    });
+
+    var menu=document.getElementById("menu-btn"), side=document.getElementById("sidebar"), back=document.getElementById("mobile-backdrop");
+    menu.onclick=function(){side.classList.add("mobile-open");back.classList.add("show");};
+    document.getElementById("sidebar-close").onclick=function(){side.classList.remove("mobile-open");back.classList.remove("show");};
+    back.onclick=function(){side.classList.remove("mobile-open");back.classList.remove("show");};
+
+    document.getElementById("account-btn").onclick=function(){document.getElementById("account-menu").classList.toggle("open");};
+    document.addEventListener("click",function(e){if(!e.target.closest(".account"))document.getElementById("account-menu").classList.remove("open");});
+
+    document.getElementById("logout").onclick=function(){localStorage.removeItem("gameapi_user");notify("success","Signed out","Your local developer session has been cleared.");};
+
+    document.getElementById("chat-open").onclick=function(){document.getElementById("chat-panel").classList.add("open");};
+    document.getElementById("chat-close").onclick=function(){document.getElementById("chat-panel").classList.remove("open");};
+
+    document.getElementById("chat-form").onsubmit=function(e){
+      e.preventDefault();var input=document.getElementById("chat-input"),v=input.value.trim();if(!v)return;
+      document.getElementById("chat-messages").insertAdjacentHTML("beforeend",'<div class="bubble me">'+esc(v)+'</div>');
+      input.value="";notify("success","Message ready","Your support message has been added to the conversation.");
+    };
+
+    var left=document.getElementById("chat-left"),right=document.getElementById("chat-right");
+    if(left)left.onclick=function(){document.getElementById("chat-panel").classList.add("left");notify("success","Chat moved","Support chat is now on the left.");};
+    if(right)right.onclick=function(){document.getElementById("chat-panel").classList.remove("left");notify("success","Chat moved","Support chat is now on the right.");};
+    var collapse=document.getElementById("collapse");
+    if(collapse)collapse.onclick=function(){side.classList.toggle("collapsed");};
+
+    var test=document.getElementById("module-test");
+    if(test)test.onclick=function(){notify("success","Module check passed","'+esc((META[key]||META.dashboard)[0])+' is responding inside the developer console.");};
+  }
+
+  window.addEventListener("error",function(e){notify("error","Page error",e.message||"Unexpected error");});
+  window.addEventListener("unhandledrejection",function(e){notify("error","Operation failed",e.reason&&e.reason.message?e.reason.message:String(e.reason||"Unhandled error"));});
+
+  document.addEventListener("DOMContentLoaded",function(){
+    try{
+      var loader=document.createElement("div");
+      loader.className="page-loader";
+      loader.innerHTML='<div class="loader-content"><div class="loader-logo">G<span></span></div><strong>Game API</strong><small>Preparing developer workspace</small><div class="loader-track"><i></i></div></div>';
+      document.body.appendChild(loader);
+      boot();
+      requestAnimationFrame(function(){setTimeout(function(){loader.classList.add("hide");setTimeout(function(){if(loader.parentNode)loader.remove();},420);},520);});
+    }catch(e){
+      var a=document.getElementById("app");
+      if(a)a.innerHTML='<div class="fatal"><div><h2>Game API could not load</h2><pre>'+esc(e.stack||e.message||e)+'</pre><button onclick="location.reload()">Reload workspace</button></div></div>';
+    }
+  });
 })();
