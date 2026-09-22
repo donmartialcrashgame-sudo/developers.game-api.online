@@ -75,7 +75,7 @@
 
   function esc(v){
     return String(v == null ? "" : v).replace(/[&<>"']/g,function(x){
-      return {"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[x];
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[x];
     });
   }
 
