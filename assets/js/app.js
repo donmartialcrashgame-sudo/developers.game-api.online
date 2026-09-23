@@ -509,6 +509,7 @@
     load();
   }
 
+
   function profileContent(){
     return '<div class="profile-page">'+
       '<section class="profile-hero glass-card">'+
@@ -546,10 +547,9 @@
     var nameInput=document.getElementById("profile-name"), emailInput=document.getElementById("profile-email"), avatarInput=document.getElementById("profile-avatar-url");
     var displayName=document.getElementById("profile-display-name"), displayEmail=document.getElementById("profile-display-email"), avatar=document.getElementById("profile-avatar"), preview=document.getElementById("profile-preview-avatar");
     var providerEl=document.getElementById("profile-provider"), provider2=document.getElementById("profile-auth-provider"), userId=document.getElementById("profile-user-id"), created=document.getElementById("profile-created"), emailStatus=document.getElementById("profile-email-status"), status=document.getElementById("profile-save-status");
-
     function applyAvatar(el,url,initial){
       if(!el)return;
-      if(url) el.innerHTML='<img src="'+esc(url)+'" alt="Profile photo">';
+      if(url)el.innerHTML='<img src="'+esc(url)+'" alt="Profile photo">';
       else el.textContent=initial;
     }
     function syncPreview(){
@@ -557,46 +557,45 @@
       displayName.textContent=n; displayEmail.textContent=emailInput.value||"";
       applyAvatar(avatar,url,initial); applyAvatar(preview,url,initial);
     }
-    function setStatus(text,error){
-      if(status)status.innerHTML='<i></i> '+esc(text);
-      if(status)status.classList.toggle("error",!!error);
+    function setStatus(label,error){
+      if(status){status.innerHTML='<i></i> '+esc(label);status.classList.toggle("error",!!error);}
     }
     async function load(){
       try{
-        var sb=await connectSupabase(); if(!sb)throw new Error("Supabase is unavailable.");
-        var auth=await sb.auth.getSession(), session=auth.data&&auth.data.session;
+        var sb=await connectSupabase();
+        if(!sb)throw new Error("Supabase is unavailable.");
+        var result=await sb.auth.getSession(),session=result.data&&result.data.session;
         if(!session){location.replace("login.html");return;}
-        var user=session.user||{}, md=user.user_metadata||{}, appmd=user.app_metadata||{};
+        var user=session.user||{},md=user.user_metadata||{},appmd=user.app_metadata||{};
         var name=md.full_name||md.name||md.user_name||md.preferred_username||((user.email||"").split("@")[0])||"Developer";
-        var provider=appmd.provider||"email", avatarUrl=md.avatar_url||md.picture||"";
-        nameInput.value=name; emailInput.value=user.email||""; avatarInput.value=avatarUrl;
-        userId.textContent=user.id||"—"; providerEl.textContent=provider; provider2.textContent=provider;
+        var provider=appmd.provider||"email",avatarUrl=md.avatar_url||md.picture||"";
+        nameInput.value=name;emailInput.value=user.email||"";avatarInput.value=avatarUrl;
+        userId.textContent=user.id||"—";providerEl.textContent=provider;provider2.textContent=provider;
         created.textContent=user.created_at?new Date(user.created_at).toLocaleString():"—";
         emailStatus.textContent=user.email_confirmed_at?"Verified":"Not verified";
-        syncPreview(); setStatus("Synced");
+        syncPreview();setStatus("Synced");
       }catch(e){setStatus(e.message||"Unable to load profile.",true);}
     }
     async function save(){
-      var n=(nameInput.value||"").trim(), url=(avatarInput.value||"").trim();
+      var n=(nameInput.value||"").trim(),url=(avatarInput.value||"").trim();
       if(!n){notify("error","Profile update","Please enter a display name.");return;}
-      setStatus("Saving…"); document.getElementById("profile-save").disabled=true;
+      setStatus("Saving…");document.getElementById("profile-save").disabled=true;
       try{
-        var sb=await connectSupabase(); if(!sb)throw new Error("Supabase is unavailable.");
+        var sb=await connectSupabase();
+        if(!sb)throw new Error("Supabase is unavailable.");
         var result=await sb.auth.updateUser({data:{full_name:n,avatar_url:url}});
         if(result.error)throw result.error;
-        var user=result.data&&result.data.user||{};
-        var provider=(user.app_metadata&&user.app_metadata.provider)||"email";
-        var fresh={name:n,email:user.email||emailInput.value,id:user.id||userId.textContent,avatar:url};
-        localStorage.setItem("gameapi_user",JSON.stringify(fresh));
+        var user=result.data&&result.data.user||{},provider=(user.app_metadata&&user.app_metadata.provider)||"email";
+        localStorage.setItem("gameapi_user",JSON.stringify({name:n,email:user.email||emailInput.value,id:user.id||userId.textContent,avatar:url}));
         document.querySelectorAll(".account-meta b,.account-menu-head b").forEach(function(el){el.textContent=n;});
-        document.querySelectorAll(".account-meta small,.account-menu-head small").forEach(function(el){el.textContent:fresh.email;});
+        document.querySelectorAll(".account-meta small,.account-menu-head small").forEach(function(el){el.textContent=user.email||emailInput.value;});
         document.querySelectorAll(".avatar").forEach(function(el){applyAvatar(el,url,(n.charAt(0)||"D").toUpperCase());});
-        providerEl.textContent=provider; provider2.textContent=provider; syncPreview(); setStatus("Saved just now");
+        providerEl.textContent=provider;provider2.textContent=provider;syncPreview();setStatus("Saved just now");
         notify("success","Profile updated","Your developer profile has been saved.");
       }catch(e){setStatus(e.message||"Could not save profile.",true);notify("error","Profile update failed",e.message||"Please try again.");}
       finally{document.getElementById("profile-save").disabled=false;}
     }
-    nameInput.oninput=syncPreview; avatarInput.oninput=syncPreview;
+    nameInput.oninput=syncPreview;avatarInput.oninput=syncPreview;
     form.onsubmit=function(e){e.preventDefault();save();};
     document.getElementById("profile-save-top").onclick=save;
     document.getElementById("profile-reset").onclick=load;
