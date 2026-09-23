@@ -52,7 +52,10 @@
     <span>Facebook</span>
   </button>
     <button class="provider-btn" type="button" disabled aria-disabled="true"><span>Apple</span></button>
-    <button class="provider-btn" type="button" disabled aria-disabled="true"><span>GitLab</span></button>
+    <button class="provider-btn provider-active" id="gitlabBtn" type="button" aria-label="Sign up with GitLab">
+      <svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#E24329" d="m12 21.66 3.03-9.33H8.97L12 21.66Z"/><path fill="#FC6D26" d="M12 21.66 8.97 12H2.62L12 21.66Z"/><path fill="#FCA326" d="m2.62 12 1.84-5.66a.43.43 0 0 1 .82 0L6.5 10.7 8.97 12H2.62Z"/><path fill="#E24329" d="m2.62 12 1.84 5.66a.43.43 0 0 0 .82 0L6.5 13.3 2.62 12Z"/><path fill="#FC6D26" d="M12 21.66 15.03 12h6.35L12 21.66Z"/><path fill="#FCA326" d="m21.38 12-1.84-5.66a.43.43 0 0 0-.82 0L17.5 10.7 15.03 12h6.35Z"/><path fill="#E24329" d="m21.38 12-1.84 5.66a.43.43 0 0 1-.82 0L17.5 13.3l3.88-1.3Z"/></svg>
+      <span>GitLab</span>
+    </button>
   </div>
 </div>
 <div class="otp-step" id="otpStep">
@@ -132,6 +135,7 @@ async function socialSignIn(provider,button,label){
 }
 $("googleBtn").onclick=()=>socialSignIn("google",$("googleBtn"),"Google");
 $("githubBtn").onclick=()=>socialSignIn("github",$("githubBtn"),"GitHub");
+$("gitlabBtn").onclick=()=>socialSignIn("gitlab",$("gitlabBtn"),"GitLab");
 $("facebookBtn").onclick=()=>socialSignIn("facebook",$("facebookBtn"),"Facebook");
 
 $("registerForm").onsubmit=async event=>{
