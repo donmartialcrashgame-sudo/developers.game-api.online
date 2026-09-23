@@ -98,7 +98,7 @@
     supabaseClientPromise=import("https://esm.sh/@supabase/supabase-js@2.105.0")
       .then(function(mod){
         var client=mod.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
-          auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+          auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,experimental:{passkey:true}}
         });
         window.gameApiSupabase=client;
         document.documentElement.setAttribute("data-supabase","connected");
@@ -602,11 +602,123 @@
     load();
   }
 
+  function authenticationContent(){
+    return '<div class="auth-security-page">'+
+      '<section class="module-banner auth-banner"><div><span class="eyebrow">GAME API · AUTHENTICATION</span><h2>Sign-in & verification methods</h2><p>Manage the authentication methods connected to your real Supabase account.</p></div><div class="module-orb"><span>🔐</span></div></section>'+
+      '<section class="auth-method-grid">'+
+        '<div class="glass-card auth-method-card"><div class="auth-method-icon passkey">⌁</div><div class="auth-method-copy"><span class="card-kicker">PASSWORDLESS SIGN-IN</span><h3>Passkey</h3><p>Use your device, biometric, PIN or security key to sign in without typing a password.</p><div class="auth-status" id="auth-passkey-status"><i></i> Checking…</div></div><div class="auth-method-actions"><button class="primary-btn" id="auth-passkey-add">Add passkey <b>→</b></button></div><div class="auth-factor-list" id="auth-passkey-list"></div></div>'+
+        '<div class="glass-card auth-method-card"><div class="auth-method-icon totp">6·6</div><div class="auth-method-copy"><span class="card-kicker">AUTHENTICATOR APP</span><h3>TOTP</h3><p>Use a six-digit code from Google Authenticator, Microsoft Authenticator, 1Password or another TOTP app.</p><div class="auth-status" id="auth-totp-status"><i></i> Checking…</div></div><div class="auth-method-actions"><button class="primary-btn" id="auth-totp-add">Set up TOTP <b>→</b></button></div><div class="auth-factor-list" id="auth-totp-list"></div></div>'+
+      '</section>'+
+      '<section class="glass-card auth-info-card"><div class="card-head"><div><span class="card-kicker">SECURITY LEVEL</span><h3>Current authentication assurance</h3><p id="auth-aal-copy">Checking the current session assurance level…</p></div><span class="health-badge" id="auth-aal-badge"><i></i> Checking</span></div><div class="module-status"><div><span>Session</span><b id="auth-session-status">Checking</b></div><div><span>Passkeys</span><b id="auth-passkey-count">—</b></div><div><span>TOTP factors</span><b id="auth-totp-count">—</b></div></div></section>'+
+      '<div class="auth-modal" id="totp-modal"><div class="auth-modal-panel"><button class="auth-modal-close" id="totp-close">×</button><span class="card-kicker">TOTP SETUP</span><h3>Connect your authenticator app</h3><p>Scan this QR code, then enter the six-digit code shown in your authenticator app to finish setup.</p><div class="totp-qr-wrap"><img id="totp-qr" alt="TOTP QR code"></div><label class="totp-secret-label">MANUAL SECRET<input id="totp-secret" readonly></label><label class="totp-code-label">VERIFICATION CODE<input id="totp-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="123456"></label><div class="auth-modal-actions"><button class="secondary-btn" id="totp-cancel">Cancel</button><button class="primary-btn" id="totp-verify">Verify & enable <b>→</b></button></div><div class="auth-modal-error" id="totp-error"></div></div></div>'+
+    '</div>';
+  }
+
+  function securityContent(){
+    return '<div class="auth-security-page">'+
+      '<section class="module-banner security-banner"><div><span class="eyebrow">GAME API · SECURITY</span><h2>Protect your developer account</h2><p>Review your active authentication factors and strengthen account access with passkeys and TOTP.</p></div><div class="module-orb"><span>◇</span></div></section>'+
+      '<section class="glass-card security-overview-card"><div class="card-head"><div><span class="card-kicker">ACCOUNT PROTECTION</span><h3>Security overview</h3><p>These controls are connected to your authenticated Supabase session.</p></div><span class="health-badge" id="security-aal-badge"><i></i> Checking</span></div><div class="security-overview-grid"><div><span>AUTHENTICATION ASSURANCE</span><b id="security-aal">Checking…</b></div><div><span>PASSKEYS</span><b id="security-passkey-count">—</b></div><div><span>TOTP</span><b id="security-totp-count">—</b></div><div><span>SESSION</span><b class="active">Active</b></div></div></section>'+
+      '<section class="security-control-grid">'+
+        '<div class="glass-card security-control-card"><div class="security-control-top"><div class="auth-method-icon passkey">⌁</div><div><span class="card-kicker">WEBAUTHN</span><h3>Passkeys</h3></div></div><p>Passkeys are phishing-resistant credentials stored by your device or password manager.</p><div class="security-list" id="security-passkeys"><div class="security-empty">Loading passkeys…</div></div><button class="primary-btn" id="security-passkey-add">Add passkey <b>→</b></button></div>'+
+        '<div class="glass-card security-control-card"><div class="security-control-top"><div class="auth-method-icon totp">6·6</div><div><span class="card-kicker">APP AUTHENTICATOR</span><h3>TOTP</h3></div></div><p>Use a time-based six-digit code from your authenticator app as an additional verification factor.</p><div class="security-list" id="security-totps"><div class="security-empty">Loading TOTP factors…</div></div><button class="primary-btn" id="security-totp-add">Set up TOTP <b>→</b></button></div>'+
+      '</section>'+
+      '<div class="auth-modal" id="security-totp-modal"><div class="auth-modal-panel"><button class="auth-modal-close" id="security-totp-close">×</button><span class="card-kicker">TOTP SETUP</span><h3>Connect your authenticator app</h3><p>Scan the QR code, then enter the six-digit code from your authenticator app.</p><div class="totp-qr-wrap"><img id="security-totp-qr" alt="TOTP QR code"></div><label class="totp-secret-label">MANUAL SECRET<input id="security-totp-secret" readonly></label><label class="totp-code-label">VERIFICATION CODE<input id="security-totp-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="123456"></label><div class="auth-modal-actions"><button class="secondary-btn" id="security-totp-cancel">Cancel</button><button class="primary-btn" id="security-totp-verify">Verify & enable <b>→</b></button></div><div class="auth-modal-error" id="security-totp-error"></div></div></div>'+
+    '</div>';
+  }
+
+  async function getAuthSecurityData(sb){
+    var factorsResult=await sb.auth.mfa.listFactors();
+    if(factorsResult.error)throw factorsResult.error;
+    var factors=factorsResult.data||{};
+    var allFactors=(factors.all||[]);
+    var totps=allFactors.filter(function(x){return String(x.factor_type||x.type||"").toLowerCase()==="totp" && String(x.status||"").toLowerCase()!=="unverified";});
+    var aal=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    var passkeys=[];
+    if(sb.auth.passkey && typeof sb.auth.passkey.list==="function"){
+      var p=await sb.auth.passkey.list();
+      if(!p.error)passkeys=p.data||[];
+    }
+    return {totps:totps,passkeys:passkeys,aal:aal.data||{}};
+  }
+
+  function formatSecurityDate(v){
+    if(!v)return "—";
+    var d=new Date(v); return isNaN(d.getTime())?"—":d.toLocaleString();
+  }
+
+  function securityAuthError(error){
+    var msg=error&&error.message?error.message:String(error||"Unknown error");
+    if(/passkey_disabled/i.test(msg))return "Passkey authentication is not enabled for this Supabase project yet.";
+    if(/webauthn/i.test(msg))return "Passkey setup could not be completed. Make sure this site is opened on a supported browser and the device has a screen lock or authenticator.";
+    return msg;
+  }
+
+  function openTotpSetup(sb, ids){
+    var modal=document.getElementById(ids.modal), qr=document.getElementById(ids.qr), secret=document.getElementById(ids.secret), code=document.getElementById(ids.code), error=document.getElementById(ids.error);
+    if(!modal)return;
+    error.textContent=""; code.value=""; modal.classList.add("open");
+    sb.auth.mfa.enroll({factorType:"totp",friendlyName:"Game API Authenticator"}).then(function(result){
+      if(result.error)throw result.error;
+      var data=result.data||{};
+      qr.src=data.totp&&data.totp.qr_code||""; secret.value=data.totp&&data.totp.secret||""; modal.dataset.factorId=data.id||"";
+    }).catch(function(e){error.textContent=e.message||"Could not start TOTP setup.";});
+  }
+
+  function initAuthSecurity(key){
+    var isAuth=key==="authentication";
+    connectSupabase().then(async function(sb){
+      if(!sb)return;
+      var sessionResult=await sb.auth.getSession().catch(function(){return null;});
+      if(!sessionResult||!sessionResult.data||!sessionResult.data.session){location.replace("login.html");return;}
+      var ids=isAuth?{passkeyStatus:"auth-passkey-status",passkeyList:"auth-passkey-list",passkeyCount:"auth-passkey-count",totpStatus:"auth-totp-status",totpList:"auth-totp-list",totpCount:"auth-totp-count",aalBadge:"auth-aal-badge",aalCopy:"auth-aal-copy",session:"auth-session-status",passkeyAdd:"auth-passkey-add",totpAdd:"auth-totp-add",modal:"totp-modal",close:"totp-close",cancel:"totp-cancel",verify:"totp-verify",qr:"totp-qr",secret:"totp-secret",code:"totp-code",error:"totp-error"}:{passkeyStatus:null,passkeyList:"security-passkeys",passkeyCount:"security-passkey-count",totpStatus:null,totpList:"security-totps",totpCount:"security-totp-count",aalBadge:"security-aal-badge",aalCopy:null,session:null,passkeyAdd:"security-passkey-add",totpAdd:"security-totp-add",modal:"security-totp-modal",close:"security-totp-close",cancel:"security-totp-cancel",verify:"security-totp-verify",qr:"security-totp-qr",secret:"security-totp-secret",code:"security-totp-code",error:"security-totp-error"};
+      var passkeyStatus=document.getElementById(ids.passkeyStatus),totpStatus=document.getElementById(ids.totpStatus),passkeyList=document.getElementById(ids.passkeyList),totpList=document.getElementById(ids.totpList);
+      function setAal(aal){
+        var current=aal&&aal.currentLevel||"aal1", label=current==="aal2"?"AAL2 · MFA verified":"AAL1 · Standard sign-in";
+        var badge=document.getElementById(ids.aalBadge),copy=ids.aalCopy&&document.getElementById(ids.aalCopy);
+        if(badge)badge.innerHTML='<i></i> '+label;
+        if(copy)copy.textContent=current==="aal2"?"This session has been verified with an additional factor.":"This session is using standard authentication. Add and verify TOTP to reach AAL2.";
+        var securityAal=document.getElementById("security-aal"); if(securityAal)securityAal.textContent=label;
+      }
+      function render(data){
+        setAal(data.aal);
+        var pcount=data.passkeys.length,tcount=data.totps.length;
+        var pc=document.getElementById(ids.passkeyCount),tc=document.getElementById(ids.totpCount);
+        if(pc)pc.textContent=pcount+" registered"; if(tc)tc.textContent=tcount+" enabled";
+        var sp=document.getElementById("security-passkey-count"),st=document.getElementById("security-totp-count");
+        if(sp)sp.textContent=pcount+" registered"; if(st)st.textContent=tcount+" enabled";
+        if(passkeyStatus)passkeyStatus.innerHTML='<i></i> '+(pcount?"Enabled":"Not configured");
+        if(totpStatus)totpStatus.innerHTML='<i></i> '+(tcount?"Enabled":"Not configured");
+        if(passkeyList)passkeyList.innerHTML=pcount?data.passkeys.map(function(p){return '<div class="auth-factor-item"><div><b>'+esc(p.friendly_name||"Passkey")+'</b><small>Added '+esc(formatSecurityDate(p.created_at))+(p.last_used_at?" · Last used "+esc(formatSecurityDate(p.last_used_at)):"")+'</small></div><button class="text-danger auth-passkey-delete" data-id="'+esc(p.id)+'">Remove</button></div>';}).join(""):'<div class="security-empty">No passkeys are registered on this account.</div>';
+        if(totpList)totpList.innerHTML=tcount?data.totps.map(function(f){return '<div class="auth-factor-item"><div><b>'+esc(f.friendly_name||"Authenticator app")+'</b><small>Enabled '+esc(formatSecurityDate(f.created_at))+'</small></div><button class="text-danger auth-totp-delete" data-id="'+esc(f.id)+'">Remove</button></div>';}).join(""):'<div class="security-empty">No TOTP authenticator is enabled.</div>';
+        document.querySelectorAll(".auth-passkey-delete").forEach(function(btn){btn.onclick=async function(){if(!confirm("Remove this passkey from your Game API account?"))return;try{var result=await sb.auth.passkey.delete({passkeyId:btn.dataset.id});if(result&&result.error)throw result.error;notify("success","Passkey removed","The passkey has been removed from your account.");load();}catch(e){notify("error","Passkey removal failed",securityAuthError(e));}};});
+        document.querySelectorAll(".auth-totp-delete").forEach(function(btn){btn.onclick=async function(){if(!confirm("Disable this TOTP factor?"))return;try{var result=await sb.auth.mfa.unenroll({factorId:btn.dataset.id});if(result.error)throw result.error;notify("success","TOTP disabled","The authenticator factor has been removed.");load();}catch(e){notify("error","TOTP removal failed",securityAuthError(e));}};});
+      }
+      async function load(){try{var data=await getAuthSecurityData(sb);render(data);}catch(e){notify("error","Security data unavailable",securityAuthError(e));}}
+      async function addPasskey(){
+        try{if(typeof sb.auth.registerPasskey!=="function")throw new Error("Passkey support is not available in this client.");var result=await sb.auth.registerPasskey();if(result.error)throw result.error;notify("success","Passkey added","Your passkey is now registered with Game API.");load();}
+        catch(e){notify("error","Passkey setup failed",securityAuthError(e));}
+      }
+      var add=document.getElementById(ids.passkeyAdd);if(add)add.onclick=addPasskey;
+      var addTotp=document.getElementById(ids.totpAdd);if(addTotp)addTotp.onclick=function(){openTotpSetup(sb,ids);};
+      var modal=document.getElementById(ids.modal),close=document.getElementById(ids.close),cancel=document.getElementById(ids.cancel),verify=document.getElementById(ids.verify);
+      if(close)close.onclick=function(){modal.classList.remove("open");}; if(cancel)cancel.onclick=function(){modal.classList.remove("open");}; if(modal)modal.onclick=function(e){if(e.target===modal)modal.classList.remove("open");};
+      if(verify)verify.onclick=async function(){
+        var factorId=modal.dataset.factorId, code=(document.getElementById(ids.code).value||"").replace(/\D/g,""), err=document.getElementById(ids.error); err.textContent="";
+        if(!factorId){err.textContent="TOTP setup has not finished loading yet.";return;} if(code.length!==6){err.textContent="Enter the six-digit code from your authenticator app.";return;}
+        try{var result=await sb.auth.mfa.challenge({factorId:factorId});if(result.error)throw result.error;var verified=await sb.auth.mfa.verify({factorId:factorId,challengeId:result.data.id,code:code});if(verified.error)throw verified.error;modal.classList.remove("open");notify("success","TOTP enabled","Your authenticator app is now protecting this account.");load();}
+        catch(e){err.textContent=e.message||"The verification code was not accepted. Check your authenticator app and try again.";}
+      };
+      load();
+    }).catch(function(e){notify("error","Security setup failed",securityAuthError(e));});
+  }
+
   function genericContent(key){
     if(key==="overview") return overviewContent();
     if(key==="usage") return usageContent();
     if(key==="keys") return apiKeysContent();
     if(key==="profile") return profileContent();
+    if(key==="authentication") return authenticationContent();
+    if(key==="security") return securityContent();
     if(key==="how-to-use-gameapi") return howToUseContent();
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
@@ -703,6 +815,9 @@
     }
     if(key==="profile"){
       initProfile();
+    }
+    if(key==="authentication" || key==="security"){
+      initAuthSecurity(key);
     }
     if(key==="login"){
       var temp=document.getElementById("temporary-login");
