@@ -326,43 +326,110 @@
 
   function apiKeysContent(){
     return '<div class="keys-page">'+
-      '<section class="keys-hero glass-card"><div><span class="eyebrow">GAME API · CREDENTIALS</span><h2>Your API credentials, tied to your account.</h2><p>Keys shown here are loaded from the connected Game API management service. Secret values are never recreated or displayed after creation.</p></div><button class="primary-btn" id="keys-refresh">Refresh keys <b>↻</b></button></section>'+
+      '<section class="keys-hero glass-card"><div><span class="eyebrow">GAME API · CREDENTIALS</span><h2>Manage your API keys.</h2><p>Create, view, copy and revoke the credentials connected to your authenticated Game API account. Secret keys are only retrieved from the real backend when you request them.</p></div><div class="keys-hero-actions"><button class="secondary-btn" id="keys-copy-active">Copy active secret</button><button class="primary-btn" id="keys-create">+ Create new key</button></div></section>'+
       '<section class="metric-grid keys-metrics">'+
-        metric("API KEYS","—","Loading connected key records","⌘","blue","Live data")+
-        metric("ACTIVE","—","From your returned key records","●","green","Live data")+
-        metric("REVOKED","—","From your returned key records","×","purple","Live data")+
-        metric("LAST USED","—","Latest recorded key activity","◷","orange","Live data")+
+        metric("API KEYS","—","Connected key records","⌘","blue","Live data")+
+        metric("ACTIVE","—","Keys currently usable","●","green","Live data")+
+        metric("REVOKED","—","Keys no longer usable","×","purple","Live data")+
+        metric("LAST USED","—","Latest recorded activity","◷","orange","Live data")+
       '</section>'+
-      '<section class="glass-card keys-list-card"><div class="card-head"><div><span class="card-kicker">CONNECTED CREDENTIALS</span><h3>API keys</h3><p>Only keys belonging to the authenticated account should be returned by the management API.</p></div><span class="usage-badge" id="keys-source-badge"><i></i> Loading</span></div><div id="api-keys-list" class="api-keys-list"><div class="keys-empty"><b>Loading API keys…</b><span>Reading your connected credentials.</span></div></div></section>'+
-      '<section class="keys-security-grid"><div class="glass-card key-security"><span class="key-security-icon">◇</span><div><b>Keep your secret private</b><p>The dashboard displays safe key metadata only. Never paste a full secret into chat, public repositories or client-side code.</p></div></div><div class="glass-card key-security"><span class="key-security-icon">↻</span><div><b>Refresh after changes</b><p>After creating, rotating or revoking a key through the connected management service, refresh this page to read the latest records.</p></div></div></section>'+
+      '<section class="glass-card keys-list-card"><div class="card-head"><div><span class="card-kicker">CONNECTED CREDENTIALS</span><h3>Your API keys</h3><p>Keys returned here belong to the currently authenticated developer account.</p></div><div class="keys-toolbar"><button class="secondary-btn small" id="keys-refresh">Refresh ↻</button><span class="usage-badge" id="keys-source-badge"><i></i> Loading</span></div></div><div id="api-keys-list" class="api-keys-list"><div class="keys-empty"><b>Loading API keys…</b><span>Reading your connected credentials.</span></div></div></section>'+
+      '<section class="keys-security-grid"><div class="glass-card key-security"><span class="key-security-icon">◇</span><div><b>Keep your secret private</b><p>Use your API secret only on a trusted server. Never put it in browser JavaScript or commit it to GitHub.</p></div></div><div class="glass-card key-security"><span class="key-security-icon">↻</span><div><b>Revoke exposed keys</b><p>If a secret is exposed, revoke that key immediately and create a replacement from this page.</p></div></div></section>'+
+      '<div class="keys-modal" id="keys-create-modal"><div class="keys-dialog"><button class="keys-dialog-close" id="keys-create-close">×</button><span class="eyebrow">NEW CREDENTIAL</span><h3>Create API key</h3><p>Give the key a clear name so you can identify the application that uses it.</p><label>KEY NAME<input id="keys-name" maxlength="60" placeholder="e.g. Production server"></label><div class="keys-dialog-actions"><button class="secondary-btn" id="keys-create-cancel">Cancel</button><button class="primary-btn" id="keys-generate">Generate key</button></div></div></div>'+
+      '<div class="keys-modal" id="keys-secret-modal"><div class="keys-dialog"><button class="keys-dialog-close" id="keys-secret-close">×</button><span class="eyebrow">SECRET CREATED</span><h3>API key created</h3><p>Copy this secret now. It is shown only after the real backend returns it.</p><div class="keys-secret-value" id="keys-secret-value"></div><div class="keys-warning">Keep this value private. Do not place it in frontend code or commit it to a public repository.</div><div class="keys-dialog-actions"><button class="secondary-btn" id="keys-secret-copy">Copy key</button><button class="primary-btn" id="keys-secret-done">Done</button></div></div></div>'+
+      '<div class="keys-toast" id="keys-toast"></div>'+
       '</div>';
   }
 
   function initApiKeys(){
     var list=document.getElementById("api-keys-list"), badge=document.getElementById("keys-source-badge");
-    var refresh=document.getElementById("keys-refresh");
+    var refresh=document.getElementById("keys-refresh"), create=document.getElementById("keys-create");
+    var createModal=document.getElementById("keys-create-modal"), secretModal=document.getElementById("keys-secret-modal");
+    var nameInput=document.getElementById("keys-name"), generate=document.getElementById("keys-generate");
+    var secretValue=document.getElementById("keys-secret-value"), keysCopyActive=document.getElementById("keys-copy-active");
+    var rows=[], session=null;
+
+    function toast(message,error){
+      var el=document.getElementById("keys-toast"); if(!el)return;
+      el.textContent=message; el.className="keys-toast show"+(error?" error":"");
+      clearTimeout(el._timer); el._timer=setTimeout(function(){el.className="keys-toast";},2800);
+    }
     function setMessage(title,msg,error){
       if(list)list.innerHTML='<div class="keys-empty '+(error?"error":"")+'"><b>'+esc(title)+'</b><span>'+esc(msg)+'</span></div>';
     }
-    function render(data){
-      var rows=Array.isArray(data)?data:(data&&Array.isArray(data.data)?data.data:(data&&Array.isArray(data.keys)?data.keys:[]));
+    async function backend(action,extra){
+      extra=extra||{};
+      if(!session) throw new Error("Your session has expired. Please sign in again.");
+      var route;
+      if(action==="list") route={method:"GET",path:"/api/keys"};
+      else if(action==="create") route={method:"POST",path:"/api/keys"};
+      else if(action==="revoke") route={method:"POST",path:"/api/keys/"+encodeURIComponent(extra.id)+"/revoke"};
+      else if(action==="secret") route={method:"GET",path:"/api/keys/"+encodeURIComponent(extra.id)+"/secret"};
+      else throw new Error("Invalid API key action");
+      var response=await fetch("https://api.game-api.online"+route.path,{method:route.method,headers:{"Accept":"application/json","Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:route.method==="POST"&&action==="create"?JSON.stringify({name:extra.name}):undefined});
+      var body=await response.text(),data={};
+      try{data=body?JSON.parse(body):{};}catch(e){}
+      if(response.status===401){location.replace("login.html");throw new Error("Your session has expired. Please sign in again.");}
+      if(!response.ok) throw new Error(data.error||data.message||("Key service returned HTTP "+response.status));
+      return data;
+    }
+    function normalize(payload){
+      return Array.isArray(payload)?payload:(payload&&Array.isArray(payload.keys)?payload.keys:(payload&&Array.isArray(payload.data)?payload.data:[]));
+    }
+    function preview(x){
+      var prefix=x.key_prefix||x.prefix||"gk_live";
+      var last=x.key_last4||x.last4||"";
+      return prefix+(last?"_••••••••"+last:"_••••••••");
+    }
+    function formatDate(v,empty){
+      if(!v)return empty||"—";
+      var d=new Date(v); return isNaN(d.getTime())?(empty||"—"):d.toLocaleString();
+    }
+    function render(){
       var active=rows.filter(function(x){return String(x.status||"active").toLowerCase()==="active"}).length;
       var revoked=rows.filter(function(x){return String(x.status||"").toLowerCase()==="revoked"}).length;
-      var latest=rows.map(function(x){return x.last_used_at||x.last_used||""}).filter(Boolean).sort().pop()||"—";
+      var latest=rows.map(function(x){return x.last_used_at||x.last_used||""}).filter(Boolean).sort().pop()||"";
       var cards=document.querySelectorAll(".keys-metrics .metric");
       if(cards[0])cards[0].querySelector("strong").textContent=String(rows.length);
       if(cards[1])cards[1].querySelector("strong").textContent=String(active);
       if(cards[2])cards[2].querySelector("strong").textContent=String(revoked);
-      if(cards[3])cards[3].querySelector("strong").textContent=latest==="—"?"—":new Date(latest).toLocaleDateString();
-      if(!rows.length){setMessage("No API keys returned","The connected service returned no keys for this authenticated account.");return;}
+      if(cards[3])cards[3].querySelector("strong").textContent=latest?formatDate(latest,"—"):"—";
+      if(!rows.length){setMessage("No API keys yet","Create your first key to connect an application to Game API.");return;}
       list.innerHTML=rows.map(function(x){
-        var status=String(x.status||"active").toLowerCase(), safeStatus=status==="revoked"?"revoked":"active";
-        var prefix=x.key_prefix||x.prefix||"Key";
-        var name=x.name||"Unnamed key";
-        var created=x.created_at?new Date(x.created_at).toLocaleString():"—";
+        var status=String(x.status||"active").toLowerCase(), safe=status==="revoked"?"revoked":"active";
+        var name=x.name||"Unnamed key", id=x.id||"";
         var used=x.last_used_at||x.last_used;
-        return '<article class="api-key-row"><div class="api-key-main"><div class="api-key-icon">⌘</div><div><b>'+esc(name)+'</b><span>'+esc(prefix)+'••••</span></div></div><div class="api-key-meta"><div><span>STATUS</span><b class="'+safeStatus+'">'+esc(status.toUpperCase())+'</b></div><div><span>CREATED</span><b>'+esc(created)+'</b></div><div><span>LAST USED</span><b>'+esc(used?new Date(used).toLocaleString():"Never recorded")+'</b></div><div><span>KEY ID</span><b>'+esc(x.id||"—")+'</b></div></div></article>';
+        var plan=x.plan||"free";
+        return '<article class="api-key-row">'+
+          '<div class="api-key-main"><div class="api-key-icon">⌘</div><div><b>'+esc(name)+'</b><span>'+esc(preview(x))+'</span></div></div>'+
+          '<div class="api-key-meta">'+
+            '<div><span>STATUS</span><b class="'+safe+'">'+esc(status.toUpperCase())+'</b></div>'+
+            '<div><span>PLAN</span><b>'+esc(String(plan).toUpperCase())+'</b></div>'+
+            '<div><span>CREATED</span><b>'+esc(formatDate(x.created_at))+'</b></div>'+
+            '<div><span>LAST USED</span><b>'+esc(formatDate(used,"Never"))+'</b></div>'+
+          '</div>'+
+          '<div class="api-key-actions">'+
+            (status==="active"?'<button class="secondary-btn small" data-copy="'+esc(id)+'">Copy secret</button><button class="danger-btn" data-revoke="'+esc(id)+'">Revoke</button>':'<span class="revoked-label">Revoked</span>')+
+          '</div>'+
+        '</article>';
       }).join("");
+      list.querySelectorAll("[data-copy]").forEach(function(btn){
+        btn.onclick=async function(){
+          btn.disabled=true;
+          try{var result=await backend("secret",{id:btn.dataset.copy});await navigator.clipboard.writeText(result.secret);toast("API secret copied to clipboard.");}
+          catch(e){toast(e.message||"Could not retrieve the API secret.",true);}
+          finally{btn.disabled=false;}
+        };
+      });
+      list.querySelectorAll("[data-revoke]").forEach(function(btn){
+        btn.onclick=async function(){
+          if(!confirm("Revoke this API key? This cannot be undone."))return;
+          btn.disabled=true;
+          try{await backend("revoke",{id:btn.dataset.revoke});toast("API key revoked.");await load();}
+          catch(e){toast(e.message||"Could not revoke this key.",true);btn.disabled=false;}
+        };
+      });
+      if(create)create.disabled=active>=Number(window.gameApiMaxActiveKeys||2);
     }
     async function load(){
       setMessage("Loading API keys…","Reading your connected credentials.");
@@ -370,20 +437,55 @@
       try{
         var sb=await connectSupabase();
         if(!sb)throw new Error("Supabase is unavailable");
-        var sessionResult=await sb.auth.getSession(), session=sessionResult.data&&sessionResult.data.session;
-        if(!session) { location.replace("login.html"); return; }
-        var response=await fetch("https://api.game-api.online/api/keys",{method:"GET",headers:{"Accept":"application/json","Authorization":"Bearer "+session.access_token}});
-        var textBody=await response.text(), payload={};
-        try{payload=textBody?JSON.parse(textBody):{};}catch(e){}
-        if(!response.ok)throw new Error("The key service returned HTTP "+response.status);
-        render(payload);
+        var auth=await sb.auth.getSession();
+        session=auth.data&&auth.data.session;
+        if(!session){location.replace("login.html");return;}
+        var payload=await backend("list");
+        rows=normalize(payload);
+        window.gameApiMaxActiveKeys=Number(payload.max_active_keys||2);
+        render();
         if(badge)badge.innerHTML="<i></i> Live source";
       }catch(e){
         setMessage("Unable to load live API keys","The authenticated key service could not be read right now. "+(e.message||"Please try again."),true);
         if(badge)badge.innerHTML="<i></i> Unavailable";
       }
     }
+    async function openCreate(){
+      createModal.classList.add("open"); nameInput.value=""; setTimeout(function(){nameInput.focus();},50);
+    }
+    function closeCreate(){createModal.classList.remove("open");}
+    function closeSecret(){secretModal.classList.remove("open");}
+    async function generateKey(){
+      var name=(nameInput.value||"").trim()||"Untitled key";
+      generate.disabled=true; generate.textContent="Generating…";
+      try{
+        var result=await backend("create",{name:name});
+        closeCreate();
+        secretValue.textContent=result.secret||"";
+        secretModal.classList.add("open");
+        toast("API key created.");
+        await load();
+      }catch(e){toast(e.message||"Could not create API key.",true);}
+      finally{generate.disabled=false;generate.textContent="Generate key";}
+    }
     if(refresh)refresh.onclick=load;
+    if(create)create.onclick=openCreate;
+    document.getElementById("keys-create-close").onclick=closeCreate;
+    document.getElementById("keys-create-cancel").onclick=closeCreate;
+    document.getElementById("keys-generate").onclick=generateKey;
+    document.getElementById("keys-secret-close").onclick=closeSecret;
+    document.getElementById("keys-secret-done").onclick=closeSecret;
+    document.getElementById("keys-secret-copy").onclick=async function(){
+      try{await navigator.clipboard.writeText(secretValue.textContent);toast("API secret copied.");}
+      catch(e){toast("Clipboard access failed. Copy the key manually.",true);}
+    };
+    keysCopyActive.onclick=async function(){
+      var active=rows.find(function(x){return String(x.status||"active").toLowerCase()==="active"});
+      if(!active){toast("No active API key is available.",true);return;}
+      try{var result=await backend("secret",{id:active.id});await navigator.clipboard.writeText(result.secret);toast("Active API secret copied.");}
+      catch(e){toast(e.message||"Could not retrieve the API secret.",true);}
+    };
+    [createModal,secretModal].forEach(function(modal){modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.remove("open");});});
     load();
   }
 
