@@ -292,7 +292,7 @@
     if(collapse)collapse.onclick=function(){side.classList.toggle("collapsed");};
 
     var test=document.getElementById("module-test");
-    if(test)test.onclick=function(){notify("success","Module check passed","'+esc((META[key]||META.dashboard)[0])+' is responding inside the developer console.");};
+    if(test)test.onclick=function(){notify("success","Module check passed",(META[key]||META.dashboard)[0]+" is responding inside the developer console.");};
   }
 
   window.addEventListener("error",function(e){notify("error","Page error",e.message||"Unexpected error");});
