@@ -211,7 +211,17 @@
       '<section class="metric-grid real-metrics">'+
         metric("ACCOUNT","Connected","Authenticated session","●","blue","Live"), metric("API STATUS","Checking…","api.game-api.online","●","green","Live"), metric("API KEYS","—","Connected key records","⌘","purple","Live data"), metric("USAGE","—","Awaiting usage source","◫","orange","Live data")+
       '</section>'+
-      '<section class="dashboard-grid">'+
+      '<section class="dashboard-grid dashboard-insights">'+
+        '<div class="glass-card key-snapshot-card">'+
+          '<div class="card-head"><div><span class="card-kicker">API CREDENTIAL</span><h3>Recent API key</h3><p>Your latest real API key, shown safely.</p></div><a href="api-keys.html">Manage →</a></div>'+
+          '<div class="key-snapshot" id="dashboard-recent-key"><div class="dashboard-empty"><b>Checking your API keys…</b><span>Your latest key will appear here when available.</span></div></div>'+
+        '</div>'+
+        '<div class="glass-card dashboard-chart-card">'+
+          '<div class="card-head"><div><span class="card-kicker">MONTHLY USAGE</span><h3>Requests by API key</h3><p>Real request counts returned by the API key service.</p></div><span class="usage-badge" id="dashboard-chart-badge"><i></i> Waiting</span></div>'+
+          '<div class="key-usage-chart" id="dashboard-key-chart"><div class="dashboard-empty"><b>Loading usage…</b><span>Reading current request counts.</span></div></div>'+
+        '</div>'+
+      '</section>'+
+      '<section class="dashboard-grid">
         '<div class="glass-card activity-card"><div class="card-head"><div><span class="card-kicker">REAL-TIME</span><h3>API activity</h3><p>Only connected activity is shown here.</p></div><a href="logs.html">View logs →</a></div><div class="activity-list" id="dashboard-activity"><div class="dashboard-empty"><b>Live activity source not connected</b><span>No demo requests are displayed. Connect the real logging source to populate this panel.</span></div></div></div>'+
         '<div class="glass-card health-card"><div class="card-head"><div><span class="card-kicker">SYSTEM</span><h3>Service health</h3><p>Live status from the Game API service</p></div><span class="health-badge" id="dashboard-health-badge"><i></i> Checking</span></div><div class="health-visual"><div class="health-score" id="dashboard-health-score">—<small></small></div><div class="health-bars health-bars-live" id="dashboard-health-bars"></div></div><div class="health-footer"><span>API</span><b id="dashboard-api-health">Checking</b><span>WebSocket</span><b>Configured</b></div></div>'+
       '</section>'+
@@ -743,10 +753,47 @@
           var rows=Array.isArray(payload)?payload:(Array.isArray(payload.keys)?payload.keys:(Array.isArray(payload.data)?payload.data:[]));
           var active=rows.filter(function(x){return String(x.status||"active").toLowerCase()==="active";}).length;
           setMetric(2,String(rows.length));
+
+          var totalUsage=rows.reduce(function(sum,x){return sum+Number(x.requests_used||0);},0);
+          setMetric(3,String(totalUsage));
           var keySummary=document.getElementById("dashboard-key-summary");
           if(keySummary)keySummary.textContent=active+" active · "+rows.length+" total";
           var keyAction=document.getElementById("dashboard-key-action");
           if(keyAction)keyAction.textContent=active?"Manage API keys":"Create your first API key";
+
+          var recent=rows.slice().sort(function(a,b){return new Date(b.created_at||0)-new Date(a.created_at||0);})[0];
+          var recentEl=document.getElementById("dashboard-recent-key");
+          if(recentEl){
+            if(recent){
+              var prefix=recent.key_prefix||recent.prefix||"gk_live";
+              var last4=recent.key_last4||recent.last4||"";
+              var safePrefix=prefix+(last4?"_••••••••"+last4:"_••••••••");
+              var recentStatus=String(recent.status||"active").toLowerCase();
+              var recentPlan=String(recent.plan||"free").toUpperCase();
+              var issued=recent.created_at?new Date(recent.created_at).toLocaleString():"—";
+              recentEl.innerHTML='<div class="key-snapshot-main"><div class="key-snapshot-icon">⌘</div><div class="key-snapshot-copy"><b>'+esc(recent.name||"Unnamed key")+'</b><code>'+esc(safePrefix)+'</code></div><span class="key-snapshot-status '+(recentStatus==="active"?"active":"revoked")+'">'+esc(recentStatus.toUpperCase())+'</span></div><div class="key-snapshot-meta"><div><span>ISSUED</span><b>'+esc(issued)+'</b></div><div><span>PLAN</span><b>'+esc(recentPlan)+'</b></div><div><span>USAGE</span><b>'+esc(String(recent.requests_used||0))+' requests</b></div></div>';
+            }else{
+              recentEl.innerHTML='<div class="dashboard-empty"><b>No API key yet</b><span>Create your first key and it will appear here.</span></div>';
+            }
+          }
+
+          var chart=document.getElementById("dashboard-key-chart");
+          var chartBadge=document.getElementById("dashboard-chart-badge");
+          if(chart){
+            var chartRows=rows.slice().sort(function(a,b){return Number(b.requests_used||0)-Number(a.requests_used||0);}).slice(0,6);
+            if(!chartRows.length){
+              chart.innerHTML='<div class="dashboard-empty"><b>No usage data yet</b><span>Request counts will appear here after your API keys are used.</span></div>';
+            }else{
+              var maxUsage=Math.max.apply(null,chartRows.map(function(x){return Number(x.requests_used||0);} ).concat([1]));
+              chart.innerHTML=chartRows.map(function(x){
+                var used=Number(x.requests_used||0);
+                var width=Math.max(3,Math.round((used/maxUsage)*100));
+                var label=(x.name||"Unnamed key").slice(0,22);
+                return '<div class="usage-chart-row"><div class="usage-chart-top"><span title="'+esc(x.name||"Unnamed key")+'">'+esc(label)+'</span><b>'+esc(String(used))+'</b></div><div class="usage-chart-track"><i style="width:'+width+'%"></i></div></div>';
+              }).join("");
+            }
+          }
+          if(chartBadge)chartBadge.innerHTML='<i></i> Live data';
 
           renderDashboardRecentKey(rows);
           renderDashboardKeyChart(rows);
