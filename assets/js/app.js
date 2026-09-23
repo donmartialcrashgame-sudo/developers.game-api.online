@@ -405,7 +405,7 @@
           '<div class="api-key-meta">'+
             '<div><span>STATUS</span><b class="'+safe+'">'+esc(status.toUpperCase())+'</b></div>'+
             '<div><span>PLAN</span><b>'+esc(String(plan).toUpperCase())+'</b></div>'+
-            '<div><span>CREATED</span><b>'+esc(formatDate(x.created_at))+'</b></div>'+
+            '<div><span>ISSUED</span><b>'+esc(formatDate(x.created_at))+'</b></div>'+
             '<div><span>LAST USED</span><b>'+esc(formatDate(used,"Never"))+'</b></div>'+
           '</div>'+
           '<div class="api-key-actions">'+
