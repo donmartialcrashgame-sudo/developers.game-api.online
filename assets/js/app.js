@@ -320,7 +320,7 @@
   }
 
   function initUsageLive(){
-    fetch("https://api.game-api.online/api/v1/status",{method:"GET",headers:{"Accept":"application/json"}})
+    fetch("https://x-api.game-api.online/api/v1/status",{method:"GET",headers:{"Accept":"application/json"}})
       .then(function(r){return {ok:r.ok,status:r.status};})
       .then(function(result){
         var operational=result.ok&&result.status>=200&&result.status<300;
@@ -386,7 +386,7 @@
       else if(action==="revoke") route={method:"POST",path:"/api/keys/"+encodeURIComponent(extra.id)+"/revoke"};
       else if(action==="secret") route={method:"GET",path:"/api/keys/"+encodeURIComponent(extra.id)+"/secret"};
       else throw new Error("Invalid API key action");
-      var response=await fetch("https://api.game-api.online"+route.path,{method:route.method,headers:{"Accept":"application/json","Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:route.method==="POST"&&action==="create"?JSON.stringify({name:extra.name}):undefined});
+      var response=await fetch("https://x-api.game-api.online"+route.path,{method:route.method,headers:{"Accept":"application/json","Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:route.method==="POST"&&action==="create"?JSON.stringify({name:extra.name}):undefined});
       var body=await response.text(),data={};
       try{data=body?JSON.parse(body):{};}catch(e){}
       if(response.status===401){location.replace("login.html");throw new Error("Your session has expired. Please sign in again.");}
@@ -648,7 +648,7 @@
   }
 
   function initDashboardLive(){
-    var statusUrl="https://api.game-api.online/api/v1/status";
+    var statusUrl="https://x-api.game-api.online/api/v1/status";
 
     function setMetric(index,value){
       var cards=document.querySelectorAll(".real-metrics .metric");
@@ -731,7 +731,7 @@
         if(sub)sub.textContent="Signed in as "+(realEmail||realName)+".";
 
         try{
-          var response=await fetch("https://api.game-api.online/api/keys",{
+          var response=await fetch("https://x-api.game-api.online/api/keys",{
             method:"GET",
             headers:{
               "Accept":"application/json",
@@ -805,7 +805,7 @@
   }
 
   function initOverviewLive(){
-    fetch("https://api.game-api.online/api/v1/status",{method:"GET",headers:{"Accept":"application/json"}})
+    fetch("https://x-api.game-api.online/api/v1/status",{method:"GET",headers:{"Accept":"application/json"}})
       .then(function(r){return {ok:r.ok,status:r.status};})
       .then(function(result){
         var operational=result.ok&&result.status>=200&&result.status<300;
