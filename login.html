@@ -63,8 +63,8 @@
       <svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.7 12.98c.02 2.24 1.96 2.98 1.98 2.99-.02.05-.31 1.07-1.02 2.11-.61.9-1.24 1.8-2.24 1.82-.98.02-1.3-.58-2.42-.58-1.12 0-1.48.56-2.4.6-.97.03-1.72-.98-2.33-1.87-1.25-1.82-2.2-5.14-.92-7.39.64-1.12 1.79-1.83 3.03-1.85.95-.02 1.85.63 2.42.63.57 0 1.63-.78 2.75-.67.47.02 1.79.19 2.64 1.43-.07.05-1.58.92-1.56 2.75ZM14.93 6.99c.51-.62.85-1.48.76-2.34-.73.03-1.61.49-2.13 1.11-.47.54-.88 1.41-.77 2.24.81.06 1.63-.41 2.14-1.01Z"/></svg>
       <span>Apple</span>
     </button>
-    <button class="provider-btn" type="button" disabled aria-disabled="true">
-      <svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M22 12.07c0-5.53-4.48-10.01-10-10.01S2 6.54 2 12.07c0 4.98 3.66 9.11 8.44 9.88v-6.99H7.9v-2.89h2.54V9.86c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.77l-.44 2.89h-2.33v6.99C18.34 21.18 22 17.05 22 12.07Z"/></svg>
+    <button class="provider-btn provider-active" id="gitlabBtn" type="button" aria-label="Sign in with GitLab">
+      <svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="#E24329" d="m12 21.66 3.03-9.33H8.97L12 21.66Z"/><path fill="#FC6D26" d="M12 21.66 8.97 12H2.62L12 21.66Z"/><path fill="#FCA326" d="m2.62 12 1.84-5.66a.43.43 0 0 1 .82 0L6.5 10.7 8.97 12H2.62Z"/><path fill="#E24329" d="m2.62 12 1.84 5.66a.43.43 0 0 0 .82 0L6.5 13.3 2.62 12Z"/><path fill="#FC6D26" d="M12 21.66 15.03 12h6.35L12 21.66Z"/><path fill="#FCA326" d="m21.38 12-1.84-5.66a.43.43 0 0 0-.82 0L17.5 10.7 15.03 12h6.35Z"/><path fill="#E24329" d="m21.38 12-1.84 5.66a.43.43 0 0 1-.82 0L17.5 13.3l3.88-1.3Z"/></svg>
       <span>GitLab</span>
     </button>
   </div>
@@ -129,6 +129,7 @@ async function socialSignIn(provider,button,label){
 
 $("googleBtn").onclick=()=>socialSignIn("google",$("googleBtn"),"Google");
 $("githubBtn").onclick=()=>socialSignIn("github",$("githubBtn"),"GitHub");
+$("gitlabBtn").onclick=()=>socialSignIn("gitlab",$("gitlabBtn"),"GitLab");
 $("facebookBtn").onclick=()=>socialSignIn("facebook",$("facebookBtn"),"Facebook");
 
 $("emailLinkBtn").onclick=async()=>{
