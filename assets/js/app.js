@@ -85,8 +85,26 @@
   }
 
   function getUser(){
-    try { return JSON.parse(localStorage.getItem("gameapi_user")) || {}; }
-    catch(e){ return {}; }
+    try {
+      var raw=localStorage.getItem("gameapi_user");
+      if(raw) return JSON.parse(raw) || {};
+      var supa=localStorage.getItem("supabase.auth.token");
+      if(supa){
+        var token=JSON.parse(supa);
+        var meta=(token.user&&token.user.user_metadata)||{};
+        return {name:meta.full_name||meta.name||meta.username,email:(token.user&&token.user.email)||""};
+      }
+    } catch(e){}
+    return {};
+  }
+
+  function saveChatSide(side){
+    try{localStorage.setItem("gameapi_chat_side",side);}catch(e){}
+    document.documentElement.setAttribute("data-chat-side",side);
+  }
+
+  function loadChatSide(){
+    try{return localStorage.getItem("gameapi_chat_side")||"right";}catch(e){return "right";}
   }
 
   function notify(type,title,msg){
@@ -171,7 +189,7 @@
     var app=document.getElementById("app");
     if(!app) throw new Error("Dashboard mount #app was not found.");
     var key=pageKey(), meta=META[key]||META.dashboard, u=getUser();
-    var name=u.name||"Developer", email=u.email||"developer@example.com", initial=(name.charAt(0)||"D").toUpperCase();
+    var name=u.name||u.full_name||u.fullName||u.display_name||u.username||"Developer", email=u.email||"developer@example.com", initial=(name.charAt(0)||"D").toUpperCase();
 
     app.innerHTML =
       '<div class="app-shell">'+
@@ -191,10 +209,10 @@
             (key==="dashboard"?dashboardContent():genericContent(key))+
           '</div>'+
         '</main>'+
-        '<div class="chat-panel" id="chat-panel"><div class="chat-head"><div><span class="chat-avatar">G</span><div><b>Game API Support</b><small><i></i> Usually replies quickly</small></div></div><button id="chat-close">×</button></div><div class="chat-body" id="chat-messages"><div class="bubble agent">Hello! Welcome to Game API support. How can we help you today?</div></div><form id="chat-form"><input id="chat-input" placeholder="Write a message…" autocomplete="off"><button>➤</button></form></div>'+
+        '<div class="chat-panel" id="chat-panel" data-side="right"><div class="chat-head"><div><span class="chat-avatar">G</span><div><b>Game API Support</b><small><i></i> Usually replies quickly</small></div></div><button id="chat-close">×</button></div><div class="chat-body" id="chat-messages"><div class="bubble agent">Hello! Welcome to Game API support. How can we help you today?</div></div><form id="chat-form"><input id="chat-input" placeholder="Write a message…" autocomplete="off"><button>➤</button></form></div>'+
       '</div>';
 
-    bind(key);
+    bind(key); saveChatSide(loadChatSide());
   }
 
   function bind(key){
@@ -216,7 +234,7 @@
     document.getElementById("account-btn").onclick=function(){document.getElementById("account-menu").classList.toggle("open");};
     document.addEventListener("click",function(e){if(!e.target.closest(".account"))document.getElementById("account-menu").classList.remove("open");});
 
-    document.getElementById("logout").onclick=function(){localStorage.removeItem("gameapi_user");notify("success","Signed out","Your local developer session has been cleared.");};
+    document.getElementById("logout").onclick=function(){localStorage.removeItem("gameapi_user");window.location.href="login.html";};
 
     document.getElementById("chat-open").onclick=function(){document.getElementById("chat-panel").classList.add("open");};
     document.getElementById("chat-close").onclick=function(){document.getElementById("chat-panel").classList.remove("open");};
@@ -228,8 +246,8 @@
     };
 
     var left=document.getElementById("chat-left"),right=document.getElementById("chat-right");
-    if(left)left.onclick=function(){document.getElementById("chat-panel").classList.add("left");notify("success","Chat moved","Support chat is now on the left.");};
-    if(right)right.onclick=function(){document.getElementById("chat-panel").classList.remove("left");notify("success","Chat moved","Support chat is now on the right.");};
+    if(left)left.onclick=function(){saveChatSide("left");document.getElementById("chat-panel").classList.add("left");notify("success","Chat moved","Support chat is now on the left.");};
+    if(right)right.onclick=function(){saveChatSide("right");document.getElementById("chat-panel").classList.remove("left");notify("success","Chat moved","Support chat is now on the right.");};
     var collapse=document.getElementById("collapse");
     if(collapse)collapse.onclick=function(){side.classList.toggle("collapsed");};
 
