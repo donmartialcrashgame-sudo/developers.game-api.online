@@ -289,8 +289,44 @@
   function overviewStep(num,title,desc,href,label,cls){
     return '<a class="overview-step '+cls+'" href="'+href+'"><span>'+num+'</span><div><b>'+title+'</b><small>'+desc+'</small></div><i>'+label+' →</i></a>';
   }
+  function usageContent(){
+    return '<div class="usage-page">'+
+      '<section class="usage-hero glass-card"><div><span class="eyebrow">GAME API · LIVE CONSUMPTION</span><h2>Understand your API usage without fake numbers.</h2><p>This page only displays usage values when a connected usage source provides them. Until then, the dashboard keeps the figures empty instead of showing sample or demo traffic.</p></div><a href="keys.html" class="primary-btn">Manage API Keys <b>→</b></a></section>'+
+      '<section class="metric-grid usage-metrics">'+
+        metric("REQUESTS","—","Live usage source not connected","↗","blue","Live data"),+
+        metric("SUCCESS RATE","—","Calculated from recorded requests","✓","green","Live data"),+
+        metric("AVG RESPONSE","—","Calculated from recorded requests","◷","purple","Live data"),+
+        metric("QUOTA USED","—","Plan limit source not connected","◫","orange","Live data")+
+      '</section>'+
+      '<section class="usage-grid">'+
+        '<div class="glass-card usage-chart-card"><div class="card-head"><div><span class="card-kicker">REQUEST TRAFFIC</span><h3>API request activity</h3><p>Recorded requests from your authenticated workspace</p></div><span class="usage-badge" id="usage-source-badge"><i></i> Waiting for source</span></div><div class="usage-chart-empty" id="usage-chart"><div class="usage-empty-icon">↗</div><b>No live usage data available</b><span>Connect the real request-usage source to populate this chart. No sample traffic is shown.</span></div></div>'+
+        '<div class="glass-card usage-status-card"><div class="card-head"><div><span class="card-kicker">SERVICE</span><h3>Production API</h3><p>Live connectivity check</p></div><span class="health-badge" id="usage-api-badge"><i></i> Checking</span></div><div class="usage-service"><div class="usage-service-icon" id="usage-api-icon">G</div><div><b id="usage-api-status">Checking</b><small id="usage-api-detail">Checking api.game-api.online</small></div></div><div class="usage-service-grid"><div><span>ENVIRONMENT</span><b>Production</b></div><div><span>ENDPOINT</span><b>api.game-api.online</b></div><div><span>ACCOUNT</span><b>Authenticated</b></div><div><span>USAGE SOURCE</span><b id="usage-source-label">Not connected</b></div></div></div>'+
+      '</section>'+
+      '<section class="glass-card usage-breakdown"><div class="card-head"><div><span class="card-kicker">BREAKDOWN</span><h3>Usage details</h3><p>Only verified backend data will appear here.</p></div><a href="logs.html">Open logs →</a></div><div class="usage-detail-grid"><div><span>PERIOD</span><b>Not available</b><small>No reporting period is supplied by a live usage source.</small></div><div><span>REQUEST COUNT</span><b>—</b><small>Waiting for recorded request data.</small></div><div><span>ERROR COUNT</span><b>—</b><small>Waiting for recorded request data.</small></div><div><span>DATA SOURCE</span><b>Not connected</b><small>Usage endpoint or backend aggregation has not been configured.</small></div></div></section>'+
+      '<section class="usage-actions"><a href="how-to-use-gameapi.html" class="glass-card usage-action"><span>01</span><div><b>Learn how requests are counted</b><small>Review the integration flow and authentication steps.</small></div><i>→</i></a><a href="logs.html" class="glass-card usage-action"><span>02</span><div><b>Inspect recorded requests</b><small>Open request logs when the backend logging source is available.</small></div><i>→</i></a><a href="limits.html" class="glass-card usage-action"><span>03</span><div><b>Check usage limits</b><small>Review plan limits and quotas from the connected billing source.</small></div><i>→</i></a></section>'+
+      '</div>';
+  }
+
+  function initUsageLive(){
+    fetch("https://api.game-api.online/api/v1/status",{method:"GET",headers:{"Accept":"application/json"}})
+      .then(function(r){return {ok:r.ok,status:r.status};})
+      .then(function(result){
+        var operational=result.ok&&result.status>=200&&result.status<300;
+        var label=operational?"Operational":"Unavailable";
+        var s=document.getElementById("usage-api-status"),d=document.getElementById("usage-api-detail"),b=document.getElementById("usage-api-badge"),i=document.getElementById("usage-api-icon");
+        if(s)s.textContent=label;
+        if(d)d.textContent=operational?"Production API responded successfully":"Production API returned HTTP "+result.status;
+        if(b)b.innerHTML='<i></i> '+label;
+        if(i)i.textContent=operational?"✓":"!";
+      }).catch(function(){
+        var s=document.getElementById("usage-api-status"),d=document.getElementById("usage-api-detail"),b=document.getElementById("usage-api-badge"),i=document.getElementById("usage-api-icon");
+        if(s)s.textContent="Unavailable";if(d)d.textContent="Unable to reach the production API";if(b)b.innerHTML="<i></i> Unavailable";if(i)i.textContent="!";
+      });
+  }
+
   function genericContent(key){
     if(key==="overview") return overviewContent();
+    if(key==="usage") return usageContent();
     if(key==="how-to-use-gameapi") return howToUseContent();
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
@@ -377,6 +413,9 @@
     }
     if(key==="overview"){
       initOverviewLive();
+    }
+    if(key==="usage"){
+      initUsageLive();
     }
     if(key==="login"){
       var temp=document.getElementById("temporary-login");
