@@ -129,6 +129,7 @@ async function socialSignIn(provider,button,label){
 
 $("googleBtn").onclick=()=>socialSignIn("google",$("googleBtn"),"Google");
 $("githubBtn").onclick=()=>socialSignIn("github",$("githubBtn"),"GitHub");
+$("facebookBtn").onclick=()=>socialSignIn("facebook",$("facebookBtn"),"Facebook");
 
 $("emailLinkBtn").onclick=async()=>{
   clearMessage();
