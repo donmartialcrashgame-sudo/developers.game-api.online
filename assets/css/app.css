@@ -129,3 +129,17 @@ radial-gradient(circle at 85% 85%,rgba(139,92,246,.11),transparent 28%),#f4f7fc}
 .dashboard-chart-bar-wrap>span{position:absolute;bottom:-18px;width:100%;text-align:center;color:#7185a4;font-size:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:900px){.dashboard-key-chart-grid{grid-template-columns:1fr}.dashboard-chart-bars{gap:7px}}
 @media(max-width:600px){.recent-key-main{align-items:flex-start;flex-wrap:wrap}.recent-key-status{margin-left:59px;margin-top:-5px}.dashboard-chart-bars{gap:5px}.dashboard-chart-value{font-size:6px}}
+
+/* Dashboard API key snapshot + usage chart */
+.dashboard-insights{margin-top:15px}
+.key-snapshot-card,.dashboard-chart-card{min-height:235px}
+.key-snapshot{margin-top:14px;padding:13px;border:1px solid #172b46;background:#071325;border-radius:13px}
+.key-snapshot-main{display:flex;align-items:center;gap:11px}
+.key-snapshot-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:11px;background:#102746;border:1px solid #23456f;color:#70a9ff;font-size:15px;flex:none}
+.key-snapshot-copy{min-width:0;flex:1}.key-snapshot-copy b{display:block;color:#e3edf9;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.key-snapshot-copy code{display:block;margin-top:4px;color:#7185a4;font:8px ui-monospace,SFMono-Regular,Consolas,monospace}
+.key-snapshot-status{padding:5px 7px;border-radius:7px;font-size:6px;font-weight:900;letter-spacing:.06em}.key-snapshot-status.active{background:#06251e;color:#59dfaa;border:1px solid #164c40}.key-snapshot-status.revoked{background:#2a1019;color:#fb7185;border:1px solid #642235}
+.key-snapshot-meta{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:8px;margin-top:13px;padding-top:12px;border-top:1px solid #172b46}.key-snapshot-meta div{min-width:0}.key-snapshot-meta span{display:block;color:#5f7594;font-size:6px;letter-spacing:.08em;font-weight:800}.key-snapshot-meta b{display:block;margin-top:5px;color:#c5d4e8;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.key-usage-chart{margin-top:13px;display:grid;gap:10px}
+.usage-chart-row{display:grid;gap:5px}.usage-chart-top{display:flex;justify-content:space-between;gap:10px;align-items:center}.usage-chart-top span{min-width:0;color:#aebed4;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.usage-chart-top b{color:#e0ebf8;font-size:8px;flex:none}.usage-chart-track{height:9px;background:#0c1b30;border:1px solid #172b46;border-radius:999px;overflow:hidden}.usage-chart-track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#4f46e5);min-width:3px}
+@media(max-width:900px){.key-snapshot-meta{grid-template-columns:1fr 1fr}.dashboard-insights{grid-template-columns:1fr}}
+@media(max-width:600px){.key-snapshot-meta{grid-template-columns:1fr}.key-snapshot-main{align-items:flex-start}.key-snapshot-status{margin-left:auto}}
