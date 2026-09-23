@@ -1,1 +1,148 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Game API</title><link rel="stylesheet" href="./assets/css/app.css"></head><body><div id="app"></div><script src="./assets/js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#2563eb">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>Game API • Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/app.css?v=20260923">
+<style>
+.auth-page{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 15% 10%,rgba(37,99,235,.15),transparent 30%),radial-gradient(circle at 85% 90%,rgba(139,92,246,.12),transparent 32%),#f4f7fc}
+.auth-wrap{width:min(460px,100%)}
+.auth-brand{text-align:center;margin-bottom:20px}
+.auth-brand .auth-mark{width:58px;height:58px;margin:auto;display:grid;place-items:center;border-radius:17px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:24px;font-weight:900;box-shadow:0 18px 42px rgba(37,99,235,.24)}
+.auth-brand h1{font-size:25px;margin:12px 0 5px;letter-spacing:-.04em}
+.auth-brand p{margin:0;color:#64748b;font-size:11px}
+.auth-card{padding:30px;border:1px solid #e2e8f0;border-radius:22px;background:rgba(255,255,255,.94);box-shadow:0 30px 90px rgba(15,23,42,.14);backdrop-filter:blur(16px)}
+.auth-card h2{margin:0 0 7px;font-size:22px;letter-spacing:-.03em}
+.auth-card .auth-desc{margin:0;color:#64748b;font-size:11px;line-height:1.7}
+.google-btn,.email-btn{width:100%;min-height:44px;border-radius:10px;font-size:11px;font-weight:800;cursor:pointer}
+.google-btn{margin-top:21px;border:1px solid #dbe3ef;background:#fff;color:#1f2937;display:flex;align-items:center;justify-content:center;gap:10px}
+.google-icon{width:19px;height:19px;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:900}
+.google-btn:hover{background:#f8fafc;border-color:#cbd5e1}
+.divider{display:flex;align-items:center;gap:10px;margin:19px 0;color:#94a3b8;font-size:8px;letter-spacing:.1em;font-weight:800}
+.divider:before,.divider:after{content:"";height:1px;flex:1;background:#e5eaf2}
+.auth-field{margin-top:13px}
+.auth-field label{display:block;margin:0 0 6px;color:#475569;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.auth-field input{width:100%;padding:12px 13px;border:1px solid #dbe3ef;border-radius:10px;background:#fff;color:#0f172a;outline:0;font-size:12px}
+.auth-field input:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+.email-btn{margin-top:16px;border:0;color:#fff;background:linear-gradient(135deg,#2563eb,#4f46e5);box-shadow:0 10px 25px rgba(37,99,235,.18)}
+.email-btn:disabled,.google-btn:disabled{opacity:.55;cursor:not-allowed}
+.auth-switch{text-align:center;color:#64748b;font-size:10px;margin-top:17px}
+.auth-switch a{color:#2563eb;font-weight:800}
+.auth-message{display:none;margin-top:13px;padding:11px 12px;border-radius:10px;font-size:10px;line-height:1.55}
+.auth-message.show{display:block}
+.auth-message.error{color:#b91c1c;background:#fef2f2;border:1px solid #fecaca}
+.auth-message.success{color:#047857;background:#ecfdf5;border:1px solid #a7f3d0}
+.auth-foot{text-align:center;color:#94a3b8;font-size:9px;margin-top:15px}
+</style>
+</head>
+<body>
+<main class="auth-page">
+  <div class="auth-wrap">
+    <header class="auth-brand">
+      <div class="auth-mark">G</div>
+      <h1>Game API</h1>
+      <p>Secure Developer Console</p>
+    </header>
+
+    <section class="auth-card">
+      <h2>Welcome back</h2>
+      <p class="auth-desc">Sign in to manage your API keys, usage, subscriptions and real-time integrations.</p>
+
+      <button class="google-btn" id="googleBtn" type="button"><span class="google-icon">G</span><span>Continue with Google</span></button>
+
+      <div class="divider">OR SIGN IN WITH EMAIL</div>
+
+      <form id="loginForm">
+        <div class="auth-field">
+          <label for="email">Email address</label>
+          <input id="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+        </div>
+        <div class="auth-field">
+          <label for="password">Password</label>
+          <input id="password" type="password" autocomplete="current-password" placeholder="Your password" required>
+        </div>
+        <button class="email-btn" id="emailBtn" type="submit">Sign in</button>
+      </form>
+
+      <div class="auth-switch">Need an account? <a href="signup.html">Create one</a></div>
+      <div class="auth-message" id="message"></div>
+    </section>
+
+    <div class="auth-foot">Protected by Supabase Auth · game-api.online</div>
+  </div>
+</main>
+
+<script type="module">
+import{createClient}from"https://esm.sh/@supabase/supabase-js@2.105.0";
+
+const SUPABASE_URL="https://qbagxeqquskkjksoraiz.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_chfRxHSFPSA1SZJtBajtKA_I7vs8R--";
+const CALLBACK_URL=location.origin+"/callback.html";
+const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+});
+
+const $=id=>document.getElementById(id);
+function showMessage(text,type="error"){
+  $("message").textContent=text;
+  $("message").className="auth-message show "+type;
+}
+function clearMessage(){
+  $("message").textContent="";
+  $("message").className="auth-message";
+}
+
+const existing=await supabase.auth.getSession();
+if(existing.data.session) location.replace("dashboard.html");
+
+$("googleBtn").onclick=async()=>{
+  clearMessage();
+  $("googleBtn").disabled=true;
+  $("googleBtn").querySelector("span:last-child").textContent="Connecting to Google…";
+  try{
+    const{error}=await supabase.auth.signInWithOAuth({
+      provider:"google",
+      options:{
+        redirectTo:CALLBACK_URL,
+        queryParams:{access_type:"offline",prompt:"select_account"}
+      }
+    });
+    if(error) throw error;
+  }catch(error){
+    showMessage(error.message||"Google sign-in could not be started.");
+    $("googleBtn").disabled=false;
+    $("googleBtn").querySelector("span:last-child").textContent="Continue with Google";
+  }
+};
+
+$("loginForm").onsubmit=async event=>{
+  event.preventDefault();
+  clearMessage();
+  const email=$("email").value.trim();
+  const password=$("password").value;
+  if(!email||!password){showMessage("Enter your email and password.");return}
+
+  $("emailBtn").disabled=true;
+  $("emailBtn").textContent="Signing in…";
+  try{
+    const{data,error}=await supabase.auth.signInWithPassword({email,password});
+    if(error) throw error;
+    if(!data.session) throw new Error("No authenticated session was created.");
+    location.replace("dashboard.html");
+  }catch(error){
+    showMessage(error.message||"Sign-in failed. Please check your details.");
+  }finally{
+    $("emailBtn").disabled=false;
+    $("emailBtn").textContent="Sign in";
+  }
+};
+</script>
+</body>
+</html>
