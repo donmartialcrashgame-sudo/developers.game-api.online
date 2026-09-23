@@ -47,7 +47,7 @@
 <div class="terms">By creating an account, you agree to use Game API responsibly and keep your account credentials secure.</div>
 <div class="otp-step" id="otpStep">
   <div class="otp-copy">We sent a 6-digit OTP to <strong id="signupEmailLabel"></strong>. Enter the code below to verify your email and finish creating your account.</div>
-  <input class="otp-input" id="signupOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="••••••">
+  <input class="otp-input" id="signupOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="••••••">
   <div class="otp-actions">
     <button class="otp-action otp-primary" id="verifySignupOtp" type="button">Verify email</button>
     <button class="otp-action otp-secondary" id="resendSignupOtp" type="button">Send again</button>
@@ -69,6 +69,26 @@ const $=id=>document.getElementById(id);
 function showMessage(text,type="error"){$("message").textContent=text;$("message").className="auth-message show "+type}
 function clearMessage(){$("message").textContent="";$("message").className="auth-message"}
 let signupEmail="";
+let signupOtpCooldownTimer=null;
+function startSignupOtpCooldown(seconds=60){
+  if(signupOtpCooldownTimer) clearInterval(signupOtpCooldownTimer);
+  let remaining=seconds;
+  const btn=$("resendSignupOtp");
+  btn.disabled=true;
+  btn.textContent=`Send again (${remaining}s)`;
+  signupOtpCooldownTimer=setInterval(()=>{
+    remaining-=1;
+    if(remaining<=0){
+      clearInterval(signupOtpCooldownTimer);
+      signupOtpCooldownTimer=null;
+      btn.disabled=false;
+      btn.textContent="Send again";
+      return;
+    }
+    btn.textContent=`Send again (${remaining}s)`;
+  },1000);
+}
+
 const existing=await supabase.auth.getSession();
 if(existing.data.session) location.replace("dashboard.html");
 
@@ -95,7 +115,7 @@ $("registerForm").onsubmit=async event=>{
   $("otpStep").classList.add("show");
   $("signupOtp").value="";
   $("signupOtp").focus();
-  showMessage("Your email OTP has been sent. Check your email for the 6-digit code and enter it here.","success");
+  showMessage("Your email OTP has been sent. Check your email for the 6-digit code and enter it here.","success");\n  startSignupOtpCooldown();
  }catch(error){showMessage(error.message||"Account creation failed. Please try again.")}
  finally{$("registerBtn").disabled=false;$("registerBtn").textContent="Create account"}
 };
@@ -111,7 +131,7 @@ async function resendSignupOtp(){
       options:{emailRedirectTo:CALLBACK_URL}
     });
     if(error) throw error;
-    showMessage("A new email OTP was sent to your email.","success");
+    showMessage("A new email OTP was sent to your email.","success");\n    startSignupOtpCooldown();
   }catch(error){
     showMessage(error.message||"Could not resend the verification code.");
   }finally{
