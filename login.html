@@ -86,7 +86,7 @@ const SUPABASE_URL="https://qbagxeqquskkjksoraiz.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_chfRxHSFPSA1SZJtBajtKA_I7vs8R--";
 const CALLBACK_URL="https://developers-game-api-online.onrender.com/callback.html";
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
-  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"implicit"}
 });
 
 const $=id=>document.getElementById(id);
