@@ -98,6 +98,8 @@
         });
         window.gameApiSupabase=client;
         document.documentElement.setAttribute("data-supabase","connected");
+        var live=document.querySelector(".page-live");
+        if(live) live.innerHTML="<i></i> Supabase connected";
         return client;
       })
       .catch(function(err){
@@ -255,6 +257,12 @@
     var app=document.getElementById("app");
     if(!app) throw new Error("Dashboard mount #app was not found.");
     var key=pageKey(), meta=META[key]||META.dashboard, u=getUser();
+    if(key==="login"){
+      app.innerHTML=loginContent();
+      var temp=document.getElementById("temporary-login");
+      if(temp) temp.onclick=function(){location.href="dashboard.html";};
+      return;
+    }
     var name=u.name||u.full_name||u.fullName||u.display_name||u.username||"Developer", email=u.email||"developer@example.com", initial=(name.charAt(0)||"D").toUpperCase();
 
     app.innerHTML =
