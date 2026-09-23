@@ -13,7 +13,7 @@
       ["Documentation","documentation.html","▤","documentation"],
       ["Endpoints","endpoints.html","↗","endpoints"],
       ["WebSocket","websocket.html","⌁","websocket"],
-      ["Request Logs","logs.html","☷","logs"],
+      ["Logs","logs.html","☷","logs"],
       ["API Status","status.html","●","status"]
     ]},
     { id:"games", label:"GAMES", icon:"◉", items:[
@@ -52,7 +52,7 @@
     documentation:["Documentation","Build and integrate with Game API"],
     endpoints:["Endpoints","Explore available API resources"],
     websocket:["WebSocket","Real-time connection and event tools"],
-    logs:["Request Logs","Inspect recent API activity"],
+    logs:["Logs","Inspect every API request and its response"],
     status:["API Status","Live platform health and availability"],
     crash:["Crash Game","Live crash-game developer tools"],
     live:["Live Rounds","Real-time round monitor"],
@@ -98,7 +98,35 @@
     return {};
   }
 
-  function saveChatSide(side){
+  function initLogs(){
+    var body=document.getElementById("logs-body"), search=document.getElementById("logs-search"), method=document.getElementById("logs-method"), status=document.getElementById("logs-status");
+    var detail=document.getElementById("log-detail-backdrop"), detailContent=document.getElementById("log-detail-content"), detailTitle=document.getElementById("log-detail-title");
+    var logs=[];
+    function sample(){return [
+      {id:"demo-1",time:"10:42:18",method:"GET",endpoint:"/api/v1/crash/rounds",status:200,responseTime:"42 ms",key:"gk_live_••••91",request:{headers:{"content-type":"application/json","authorization":"Bearer ********"}},body:{},response:{success:true,game:"crash",data:[]}},
+      {id:"demo-2",time:"10:41:55",method:"POST",endpoint:"/api/v1/crash/bet",status:200,responseTime:"58 ms",key:"gk_live_••••91",request:{headers:{"content-type":"application/json"}},body:{amount:100},response:{success:true,message:"Bet accepted"}},
+      {id:"demo-3",time:"10:40:21",method:"GET",endpoint:"/api/v1/status",status:200,responseTime:"31 ms",key:"gk_live_••••91",request:{headers:{}},body:{},response:{success:true,status:"operational"}},
+      {id:"demo-4",time:"10:39:07",method:"WS",endpoint:"/realtime",status:101,responseTime:"Live",key:"gk_live_••••91",request:{headers:{}},body:null,response:{type:"connected",authenticated:true}}
+    ];}
+    function escJson(v){try{return JSON.stringify(v,null,2)}catch(e){return String(v)}}
+    function render(){
+      var q=(search.value||"").toLowerCase(), m=method.value, s=status.value;
+      var filtered=logs.filter(function(x){return (!m||x.method===m)&&(!s||String(x.status).charAt(0)===s)&&(!q||(x.endpoint+" "+x.method+" "+x.status+" "+x.key).toLowerCase().indexOf(q)>-1)});
+      if(!filtered.length){body.innerHTML='<tr><td colspan="7"><div class="logs-empty"><b>No requests found</b><span>Try changing your filters or refresh the logs.</span></div></td></tr>';return;}
+      body.innerHTML=filtered.map(function(x){var ok=x.status<400||x.status===101;return '<tr class="log-row" data-id="'+x.id+'"><td class="log-time">'+x.time+'</td><td><span class="method '+(ok?"green":"pink")+'">'+x.method+'</span></td><td><b class="log-endpoint">'+x.endpoint+'</b></td><td><span class="log-status '+(ok?"ok":"error")+'">'+x.status+'</span></td><td>'+x.responseTime+'</td><td><code>'+x.key+'</code></td><td><span class="row-arrow">›</span></td></tr>';}).join("");
+      body.querySelectorAll(".log-row").forEach(function(row){row.onclick=function(){var x=logs.find(function(a){return a.id===row.dataset.id});if(!x)return;detailTitle.textContent=x.method+" "+x.endpoint;detailContent.innerHTML='<div class="detail-grid"><div><span>STATUS</span><b>'+x.status+'</b></div><div><span>RESPONSE TIME</span><b>'+x.responseTime+'</b></div><div><span>API KEY</span><b>'+x.key+'</b></div><div><span>TIME</span><b>'+x.time+'</b></div></div><div class="detail-section"><span>REQUEST HEADERS</span><pre>'+esc(escJson(x.request&&x.request.headers||{}))+'</pre></div><div class="detail-section"><span>REQUEST BODY</span><pre>'+esc(escJson(x.body))+'</pre></div><div class="detail-section response-block"><span>ACTUAL RESPONSE</span><pre>'+esc(escJson(x.response))+'</pre></div>';detail.classList.add("open");};});
+    }
+    function load(){
+      body.innerHTML='<tr><td colspan="7"><div class="logs-empty"><b>Loading logs…</b><span>Reading recorded API activity.</span></div></td></tr>';
+      /* The real logging endpoint can be configured without changing the UI. */
+      var endpoint=localStorage.getItem("gameapi_logs_endpoint");
+      if(!endpoint){logs=sample();render();return;}
+      fetch(endpoint,{credentials:"include"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(data){logs=Array.isArray(data)?data:(data.data||data.logs||[]);render();}).catch(function(){logs=[];body.innerHTML='<tr><td colspan="7"><div class="logs-empty error"><b>Unable to load live logs</b><span>Set the logging endpoint in API Configuration, then refresh.</span></div></td></tr>';});
+    }
+    search.oninput=render;method.onchange=render;status.onchange=render;document.getElementById("logs-refresh").onclick=load;
+    document.getElementById("log-detail-close").onclick=function(){detail.classList.remove("open");};detail.onclick=function(e){if(e.target===detail)detail.classList.remove("open");};
+    load();
+  }\n\n  function saveChatSide(side){
     try{localStorage.setItem("gameapi_chat_side",side);}catch(e){}
     document.documentElement.setAttribute("data-chat-side",side);
   }
@@ -178,7 +206,13 @@
     return '<a class="tool-item '+cls+'" href="'+href+'"><span class="tool-icon">'+icon+'</span><span><b>'+title+'</b><small>'+desc+'</small></span><i>↗</i></a>';
   }
 
-  function genericContent(key){
+  function logsContent(){
+    return '<div class="logs-page">'
+      + '<section class="glass-card logs-toolbar"><div class="logs-toolbar-main"><div><span class="card-kicker">API ACTIVITY</span><h3>Request logs</h3><p>Every recorded API call appears here. Click a request to inspect the actual response.</p></div><button class="primary-btn" id="logs-refresh">Refresh logs <b>↻</b></button></div><div class="logs-filters"><input id="logs-search" placeholder="Search endpoint, method, status or API key…"><select id="logs-method"><option value="">All methods</option><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>WS</option></select><select id="logs-status"><option value="">All status</option><option value="2">2xx Success</option><option value="4">4xx Client error</option><option value="5">5xx Server error</option></select></div></section>'
+      + '<section class="glass-card logs-table-card"><div class="logs-table-wrap"><table class="logs-table"><thead><tr><th>TIME</th><th>METHOD</th><th>ENDPOINT</th><th>STATUS</th><th>RESPONSE</th><th>API KEY</th><th></th></tr></thead><tbody id="logs-body"><tr><td colspan="7"><div class="logs-empty"><b>Loading logs…</b><span>Connecting to the API logging system.</span></div></td></tr></tbody></table></div></section>'
+      + '<div class="log-detail-backdrop" id="log-detail-backdrop"><section class="log-detail-panel"><div class="log-detail-head"><div><span class="card-kicker">REQUEST DETAILS</span><h3 id="log-detail-title">API request</h3></div><button id="log-detail-close">×</button></div><div id="log-detail-content"></div></section></div>'
+      + '</div>';
+  }\n\n  function genericContent(key){
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
       '<section class="module-layout"><div class="glass-card module-main"><div class="card-head"><div><span class="card-kicker">READY</span><h3>'+esc(m[0])+' workspace</h3><p>Connected to the Game API developer console.</p></div><span class="health-badge"><i></i> Available</span></div><div class="module-actions"><button id="module-test" class="primary-btn">Run module check <b>→</b></button><a href="documentation.html" class="secondary-btn">Open docs</a></div><div class="module-status"><div><span>Environment</span><b>Production</b></div><div><span>Access</span><b>Authenticated</b></div><div><span>Interface</span><b>Responsive</b></div></div></div>'+
@@ -206,7 +240,7 @@
             '<div class="top-right"><button class="top-icon" title="Notifications">♢<i></i></button><div class="account"><button class="account-btn" id="account-btn"><span class="avatar">'+initial+'</span><span class="account-meta"><b>'+esc(name)+'</b><small>'+esc(email)+'</small></span><span class="account-chevron">⌄</span></button><div class="account-menu" id="account-menu"><div class="account-menu-head"><span class="avatar small">'+initial+'</span><div><b>'+esc(name)+'</b><small>'+esc(email)+'</small></div></div><a href="profile.html">○ My Profile <span>→</span></a><a href="subscription.html">▣ Subscription <span>→</span></a><button id="logout">↪ Sign out <span>→</span></button></div></div></div>'+
           '</header>'+
           '<div class="page-content"><div class="page-title-row"><div><span class="page-kicker">GAME API / '+esc(meta[0].toUpperCase())+'</span><h1>'+esc(meta[0])+'</h1><p>'+esc(meta[1])+'</p></div><div class="page-live"><i></i> Live platform</div></div>'+
-            (key==="dashboard"?dashboardContent():genericContent(key))+
+            (key==="dashboard"?dashboardContent():key==="logs"?logsContent():genericContent(key))+
           '</div>'+
         '</main>'+
         '<div class="chat-panel" id="chat-panel" data-side="right"><div class="chat-head"><div><span class="chat-avatar">G</span><div><b>Game API Support</b><small><i></i> Usually replies quickly</small></div></div><button id="chat-close">×</button></div><div class="chat-body" id="chat-messages"><div class="bubble agent">Hello! Welcome to Game API support. How can we help you today?</div></div><form id="chat-form"><input id="chat-input" placeholder="Write a message…" autocomplete="off"><button>➤</button></form></div>'+
@@ -244,6 +278,8 @@
       document.getElementById("chat-messages").insertAdjacentHTML("beforeend",'<div class="bubble me">'+esc(v)+'</div>');
       input.value="";notify("success","Message ready","Your support message has been added to the conversation.");
     };
+
+    if(key==="logs") initLogs();
 
     var left=document.getElementById("chat-left"),right=document.getElementById("chat-right");
     if(left)left.onclick=function(){saveChatSide("left");document.getElementById("chat-panel").classList.add("left");notify("success","Chat moved","Support chat is now on the left.");};
