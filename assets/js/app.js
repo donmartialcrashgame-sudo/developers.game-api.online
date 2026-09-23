@@ -264,7 +264,33 @@
   function guideStep(num,title,desc,href,label){
     return '<article class="guide-step glass-card"><span class="guide-number">'+num+'</span><div><h3>'+title+'</h3><p>'+desc+'</p><a href="'+href+'">'+label+' →</a></div></article>';
   }
+  function overviewContent(){
+    return '<div class="overview-page">'+
+      '<section class="overview-hero glass-card"><div><span class="eyebrow"><span class="live-dot"></span> GAME API · WORKSPACE OVERVIEW</span><h2>One place to understand your integration.</h2><p>See your authenticated workspace, production API connection and the areas that need attention. Values that require backend data are clearly marked instead of using demo figures.</p></div><a href="how-to-use-gameapi.html" class="primary-btn">How to use Game API <b>→</b></a></section>'+
+      '<section class="metric-grid overview-metrics">'+
+        metric("ACCOUNT","Connected","Authenticated workspace","●","blue","Live"), metric("API STATUS","Checking…","Production API","●","green","Live"), metric("API USAGE","—","Awaiting usage source","◫","orange","Live data"), metric("API KEYS","—","Awaiting key source","⌘","purple","Live data")+
+      '</section>'+
+      '<section class="overview-columns">'+
+        '<div class="glass-card overview-status-card"><div class="card-head"><div><span class="card-kicker">CONNECTION</span><h3>Production API</h3><p>Current availability check</p></div><span class="health-badge" id="overview-api-badge"><i></i> Checking</span></div><div class="overview-status-main"><div class="overview-status-icon" id="overview-api-icon">◎</div><div><strong id="overview-api-status">Checking service…</strong><small id="overview-api-detail">Contacting api.game-api.online</small></div></div><div class="overview-status-list"><div><span>Endpoint</span><b>api.game-api.online</b></div><div><span>Environment</span><b>Production</b></div><div><span>Authentication</span><b>Supabase session</b></div></div></div>'+
+        '<div class="glass-card overview-account-card"><div class="card-head"><div><span class="card-kicker">ACCOUNT</span><h3>Your workspace</h3><p>Loaded from your authenticated account</p></div><a href="profile.html">Profile →</a></div><div class="overview-user"><span class="avatar large" id="overview-avatar">G</span><div><strong id="overview-name">Loading…</strong><small id="overview-email">Loading account…</small></div></div><div class="overview-user-meta"><div><span>User ID</span><b id="overview-user-id">Loading…</b></div><div><span>Provider</span><b id="overview-provider">Loading…</b></div></div></div>'+
+      '</section>'+
+      '<section class="glass-card overview-roadmap"><div class="card-head"><div><span class="card-kicker">DEVELOPER WORKFLOW</span><h3>Next steps</h3><p>Move from account setup to a working integration.</p></div></div><div class="overview-steps">'+
+        overviewStep("01","Secure your API key","Create and manage credentials for your application.","keys.html","API Keys","blue")+
+        overviewStep("02","Read the API reference","Check methods, endpoints, parameters and responses.","documentation.html","Documentation","green")+
+        overviewStep("03","Test your integration","Use the exact production endpoint required by your application.","endpoints.html","Explore endpoints","purple")+
+        overviewStep("04","Monitor requests","Review recorded activity through Logs when the backend logging source is connected.","logs.html","View logs","orange")+
+      '</div></section>'+
+      '<section class="overview-bottom-grid">'+
+        '<div class="glass-card"><div class="card-head"><div><span class="card-kicker">ACTIVITY</span><h3>Request activity</h3><p>Real recorded requests only</p></div><a href="logs.html">View logs →</a></div><div id="overview-activity" class="overview-empty"><b>No live activity source connected</b><span>This panel stays empty rather than displaying sample requests.</span></div></div>'+
+        '<div class="glass-card"><div class="card-head"><div><span class="card-kicker">SUPPORT</span><h3>Need help?</h3><p>Get started with the platform</p></div></div><div class="overview-help"><a href="how-to-use-gameapi.html"><b>How to use Game API</b><small>Follow the integration steps from sign-in to your first request.</small><i>→</i></a><a href="support.html"><b>Contact support</b><small>Open the support area for account and integration questions.</small><i>→</i></a></div></div>'+
+      '</section>'+
+      '</div>';
+  }
+  function overviewStep(num,title,desc,href,label,cls){
+    return '<a class="overview-step '+cls+'" href="'+href+'"><span>'+num+'</span><div><b>'+title+'</b><small>'+desc+'</small></div><i>'+label+' →</i></a>';
+  }
   function genericContent(key){
+    if(key==="overview") return overviewContent();
     if(key==="how-to-use-gameapi") return howToUseContent();
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
@@ -349,6 +375,9 @@
     if(key==="dashboard"){
       initDashboardLive();
     }
+    if(key==="overview"){
+      initOverviewLive();
+    }
     if(key==="login"){
       var temp=document.getElementById("temporary-login");
       if(temp) temp.onclick=function(){location.href="dashboard.html";};
@@ -408,6 +437,34 @@
         var keyMetric=document.querySelector(".real-metrics .metric:first-child strong");
         if(keyMetric)keyMetric.textContent="Connected";
       }catch(e){console.warn("Dashboard user refresh failed:",e);}
+    });
+  }
+
+  function initOverviewLive(){
+    fetch("https://api.game-api.online/api/v1/status",{method:"GET",headers:{"Accept":"application/json"}})
+      .then(function(r){return {ok:r.ok,status:r.status};})
+      .then(function(result){
+        var operational=result.ok&&result.status>=200&&result.status<300;
+        var label=operational?"Operational":"Unavailable";
+        var s=document.getElementById("overview-api-status"),d=document.getElementById("overview-api-detail"),b=document.getElementById("overview-api-badge"),i=document.getElementById("overview-api-icon");
+        if(s)s.textContent=label;
+        if(d)d.textContent=operational?"Production API responded successfully":"Production API returned HTTP "+result.status;
+        if(b)b.innerHTML='<i></i> '+label;
+        if(i)i.textContent=operational?"✓":"!";
+        var m=document.querySelector(".overview-metrics .metric:nth-child(2) strong");if(m)m.textContent=label;
+      }).catch(function(){
+        var s=document.getElementById("overview-api-status"),d=document.getElementById("overview-api-detail"),b=document.getElementById("overview-api-badge");
+        if(s)s.textContent="Unavailable";if(d)d.textContent="Unable to reach the production API";if(b)b.innerHTML="<i></i> Unavailable";
+      });
+    connectSupabase().then(async function(sb){
+      if(!sb)return;
+      try{
+        var result=await sb.auth.getSession();if(!result.data||!result.data.session)return;
+        var user=result.data.session.user||{},md=user.user_metadata||{},name=md.full_name||md.name||md.user_name||((user.email||"").split("@")[0])||"Developer",provider=(user.app_metadata&&user.app_metadata.provider)||"email";
+        var n=document.getElementById("overview-name"),e=document.getElementById("overview-email"),id=document.getElementById("overview-user-id"),p=document.getElementById("overview-provider"),a=document.getElementById("overview-avatar");
+        if(n)n.textContent=name;if(e)e.textContent=user.email||"";if(id)id.textContent=user.id||"";if(p)p.textContent=provider;if(a){a.textContent=(name.charAt(0)||"D").toUpperCase();if(md.avatar_url)a.innerHTML='<img src="'+esc(md.avatar_url)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">';}
+        var m=document.querySelector(".overview-metrics .metric:first-child strong");if(m)m.textContent="Connected";
+      }catch(e){console.warn("Overview user load failed:",e);}
     });
   }
 
