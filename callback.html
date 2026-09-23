@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>Game API • Completing sign in</title>
+<link rel="stylesheet" href="./assets/css/app.css?v=20260923">
+<style>
+.callback-page{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 0,rgba(37,99,235,.14),transparent 38%),#f4f7fc}
+.callback-card{width:min(420px,100%);padding:30px;text-align:center;border:1px solid #e2e8f0;border-radius:22px;background:rgba(255,255,255,.94);box-shadow:0 30px 90px rgba(15,23,42,.13)}
+.callback-mark{width:56px;height:56px;margin:0 auto 18px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-size:23px;font-weight:900}
+.callback-spinner{width:28px;height:28px;margin:20px auto;border:3px solid #dbeafe;border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite}
+.callback-card h1{font-size:21px;margin:0 0 7px}.callback-card p{margin:0;color:#64748b;font-size:11px;line-height:1.6}
+.callback-error{display:none;margin-top:16px;padding:11px;border-radius:10px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:10px;line-height:1.55}
+.callback-error.show{display:block}.callback-link{display:none;margin-top:13px;color:#2563eb;font-size:10px;font-weight:800}
+.callback-link.show{display:inline-block}@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<main class="callback-page">
+  <section class="callback-card">
+    <div class="callback-mark">G</div>
+    <h1>Completing sign in</h1>
+    <p id="status">Securing your developer session…</p>
+    <div class="callback-spinner" id="spinner"></div>
+    <div class="callback-error" id="error"></div>
+    <a class="callback-link" id="back" href="login.html">Return to sign in</a>
+  </section>
+</main>
+
+<script type="module">
+import{createClient}from"https://esm.sh/@supabase/supabase-js@2.105.0";
+
+const SUPABASE_URL="https://qbagxeqquskkjksoraiz.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_chfRxHSFPSA1SZJtBajtKA_I7vs8R--";
+const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+});
+
+const statusEl=document.getElementById("status");
+const spinner=document.getElementById("spinner");
+const errorEl=document.getElementById("error");
+const back=document.getElementById("back");
+
+try{
+  const params=new URLSearchParams(location.search);
+  const code=params.get("code");
+  const authError=params.get("error_description")||params.get("error");
+
+  if(authError) throw new Error(decodeURIComponent(authError));
+
+  if(code){
+    const{error}=await supabase.auth.exchangeCodeForSession(code);
+    if(error) throw error;
+  }
+
+  const{data,error}=await supabase.auth.getSession();
+  if(error) throw error;
+  if(!data.session) throw new Error("No authenticated session was found.");
+
+  statusEl.textContent="Sign in successful. Opening your dashboard…";
+  setTimeout(()=>location.replace("dashboard.html"),250);
+}catch(error){
+  spinner.style.display="none";
+  statusEl.textContent="We could not complete your sign in.";
+  errorEl.textContent=error.message||"Authentication callback failed.";
+  errorEl.classList.add("show");
+  back.classList.add("show");
+}
+</script>
+</body>
+</html>
