@@ -3,7 +3,7 @@
 
   var GROUPS = [
     { id:"main", label:"MAIN", icon:"◈", items:[
-      ["Dashboard","index.html","⌂","dashboard"],
+      ["Dashboard","dashboard.html","⌂","dashboard"],
       ["Overview","overview.html","◌","overview"],
       ["API Usage","usage.html","▥","usage"],
       ["Analytics","analytics.html","◒","analytics"]
