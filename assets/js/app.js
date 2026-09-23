@@ -293,9 +293,9 @@
     return '<div class="usage-page">'+
       '<section class="usage-hero glass-card"><div><span class="eyebrow">GAME API · LIVE CONSUMPTION</span><h2>Understand your API usage without fake numbers.</h2><p>This page only displays usage values when a connected usage source provides them. Until then, the dashboard keeps the figures empty instead of showing sample or demo traffic.</p></div><a href="keys.html" class="primary-btn">Manage API Keys <b>→</b></a></section>'+
       '<section class="metric-grid usage-metrics">'+
-        metric("REQUESTS","—","Live usage source not connected","↗","blue","Live data"),+
-        metric("SUCCESS RATE","—","Calculated from recorded requests","✓","green","Live data"),+
-        metric("AVG RESPONSE","—","Calculated from recorded requests","◷","purple","Live data"),+
+        metric("REQUESTS","—","Live usage source not connected","↗","blue","Live data")+
+        metric("SUCCESS RATE","—","Calculated from recorded requests","✓","green","Live data")+
+        metric("AVG RESPONSE","—","Calculated from recorded requests","◷","purple","Live data")+
         metric("QUOTA USED","—","Plan limit source not connected","◫","orange","Live data")+
       '</section>'+
       '<section class="usage-grid">'+
