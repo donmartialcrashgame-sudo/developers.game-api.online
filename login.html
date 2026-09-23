@@ -137,7 +137,9 @@ function currentEmail(){
   return $("email").value.trim().toLowerCase();
 }
 
-let passwordlessMethod="";\nlet otpCooldownTimer=null;\nlet otpVerifying=false;
+let passwordlessMethod="";
+let otpCooldownTimer=null;
+let otpVerifying=false;
 function setPasswordlessMethod(mode){
   passwordlessMethod=mode;
   const linkBtn=$("emailLinkBtn");
