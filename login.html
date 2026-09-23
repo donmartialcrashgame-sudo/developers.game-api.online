@@ -84,7 +84,7 @@ import{createClient}from"https://esm.sh/@supabase/supabase-js@2.105.0";
 
 const SUPABASE_URL="https://qbagxeqquskkjksoraiz.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_chfRxHSFPSA1SZJtBajtKA_I7vs8R--";
-const CALLBACK_URL="https://developers.game-api.online/callback.html";
+const CALLBACK_URL=window.location.origin+"/callback.html";
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"implicit"}
 });
