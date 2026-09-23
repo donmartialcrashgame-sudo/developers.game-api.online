@@ -326,21 +326,30 @@
 
   function apiKeysContent(){
     return '<div class="keys-page">'+
-      '<section class="keys-hero glass-card"><div><span class="eyebrow">GAME API · CREDENTIALS</span><h2>Manage your API keys.</h2><p>Create, view, copy and revoke the credentials connected to your authenticated Game API account. Secret keys are only retrieved from the real backend when you request them.</p></div><div class="keys-hero-actions"><button class="secondary-btn" id="keys-copy-active">Copy active secret</button><button class="primary-btn" id="keys-create">+ Create new key</button></div></section>'+
-      '<section class="metric-grid keys-metrics">'+
-        metric("API KEYS","—","Connected key records","⌘","blue","Live data")+
-        metric("ACTIVE","—","Keys currently usable","●","green","Live data")+
-        metric("REVOKED","—","Keys no longer usable","×","purple","Live data")+
-        metric("LAST USED","—","Latest recorded activity","◷","orange","Live data")+
+      '<section class="keys-hero glass-card">'+
+        '<div><span class="eyebrow">GAME API · CREDENTIALS</span><h2>Your API keys</h2><p>Manage the real credentials issued to your Game API account. Each key shows its name, issued date, status and last recorded use.</p></div>'+
+        '<div class="keys-hero-actions"><button class="secondary-btn" id="keys-copy-active">Copy active key</button><button class="primary-btn" id="keys-create">+ Create new key</button></div>'+
       '</section>'+
-      '<section class="glass-card keys-list-card"><div class="card-head"><div><span class="card-kicker">CONNECTED CREDENTIALS</span><h3>Your API keys</h3><p>Keys returned here belong to the currently authenticated developer account.</p></div><div class="keys-toolbar"><button class="secondary-btn small" id="keys-refresh">Refresh ↻</button><span class="usage-badge" id="keys-source-badge"><i></i> Loading</span></div></div><div id="api-keys-list" class="api-keys-list"><div class="keys-empty"><b>Loading API keys…</b><span>Reading your connected credentials.</span></div></div></section>'+
-      '<section class="keys-security-grid"><div class="glass-card key-security"><span class="key-security-icon">◇</span><div><b>Keep your secret private</b><p>Use your API secret only on a trusted server. Never put it in browser JavaScript or commit it to GitHub.</p></div></div><div class="glass-card key-security"><span class="key-security-icon">↻</span><div><b>Revoke exposed keys</b><p>If a secret is exposed, revoke that key immediately and create a replacement from this page.</p></div></div></section>'+
-      '<div class="keys-modal" id="keys-create-modal"><div class="keys-dialog"><button class="keys-dialog-close" id="keys-create-close">×</button><span class="eyebrow">NEW CREDENTIAL</span><h3>Create API key</h3><p>Give the key a clear name so you can identify the application that uses it.</p><label>KEY NAME<input id="keys-name" maxlength="60" placeholder="e.g. Production server"></label><div class="keys-dialog-actions"><button class="secondary-btn" id="keys-create-cancel">Cancel</button><button class="primary-btn" id="keys-generate">Generate key</button></div></div></div>'+
-      '<div class="keys-modal" id="keys-secret-modal"><div class="keys-dialog"><button class="keys-dialog-close" id="keys-secret-close">×</button><span class="eyebrow">SECRET CREATED</span><h3>API key created</h3><p>Copy this secret now. It is shown only after the real backend returns it.</p><div class="keys-secret-value" id="keys-secret-value"></div><div class="keys-warning">Keep this value private. Do not place it in frontend code or commit it to a public repository.</div><div class="keys-dialog-actions"><button class="secondary-btn" id="keys-secret-copy">Copy key</button><button class="primary-btn" id="keys-secret-done">Done</button></div></div></div>'+
+      '<section class="metric-grid keys-metrics">'+
+        metric("API KEYS","—","All issued key records","⌘","blue","Live")+
+        metric("ACTIVE","—","Keys currently usable","●","green","Live")+
+        metric("REVOKED","—","Keys no longer usable","×","purple","Live")+
+        metric("LAST USED","—","Latest recorded activity","◷","orange","Live")+
+      '</section>'+
+      '<section class="glass-card keys-list-card">'+
+        '<div class="card-head"><div><span class="card-kicker">ISSUED CREDENTIALS</span><h3>API key records</h3><p>These records come from the authenticated Game API account.</p></div>'+
+        '<div class="keys-toolbar"><button class="secondary-btn small" id="keys-refresh">Refresh ↻</button><span class="usage-badge" id="keys-source-badge"><i></i> Loading</span></div></div>'+
+        '<div id="api-keys-list" class="api-keys-list"><div class="keys-empty"><b>Loading API keys…</b><span>Reading the real credentials attached to your account.</span></div></div>'+
+      '</section>'+
+      '<section class="keys-security-grid">'+
+        '<div class="glass-card key-security"><span class="key-security-icon">◇</span><div><b>Keep your API secret private</b><p>Use the secret only where it is trusted. Never expose it in browser code or public repositories.</p></div></div>'+
+        '<div class="glass-card key-security"><span class="key-security-icon">↻</span><div><b>Revoke compromised keys</b><p>Revoke an exposed key immediately. You can then create a replacement from this same page.</p></div></div>'+
+      '</section>'+
+      '<div class="keys-modal" id="keys-create-modal"><div class="keys-dialog"><button class="keys-dialog-close" id="keys-create-close">×</button><span class="eyebrow">NEW CREDENTIAL</span><h3>Create API key</h3><p>Give the key a clear name so you can identify the application that uses it.</p><label>KEY NAME<input id="keys-name" maxlength="80" placeholder="e.g. Production server"></label><div class="keys-dialog-actions"><button class="secondary-btn" id="keys-create-cancel">Cancel</button><button class="primary-btn" id="keys-generate">Generate key</button></div></div></div>'+
+      '<div class="keys-modal" id="keys-secret-modal"><div class="keys-dialog"><button class="keys-dialog-close" id="keys-secret-close">×</button><span class="eyebrow">API SECRET</span><h3>Copy your API key</h3><p>The backend returned this real secret for your key. Keep it private.</p><div class="keys-secret-value" id="keys-secret-value"></div><div class="keys-warning">Never place your secret in frontend code or commit it to a public repository.</div><div class="keys-dialog-actions"><button class="secondary-btn" id="keys-secret-copy">Copy key</button><button class="primary-btn" id="keys-secret-done">Done</button></div></div></div>'+
       '<div class="keys-toast" id="keys-toast"></div>'+
       '</div>';
   }
-
   function initApiKeys(){
     var list=document.getElementById("api-keys-list"), badge=document.getElementById("keys-source-badge");
     var refresh=document.getElementById("keys-refresh"), create=document.getElementById("keys-create");
