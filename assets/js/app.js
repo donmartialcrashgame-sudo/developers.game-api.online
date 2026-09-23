@@ -126,7 +126,9 @@
     search.oninput=render;method.onchange=render;status.onchange=render;document.getElementById("logs-refresh").onclick=load;
     document.getElementById("log-detail-close").onclick=function(){detail.classList.remove("open");};detail.onclick=function(e){if(e.target===detail)detail.classList.remove("open");};
     load();
-  }\n\n  function saveChatSide(side){
+  }
+
+  function saveChatSide(side){
     try{localStorage.setItem("gameapi_chat_side",side);}catch(e){}
     document.documentElement.setAttribute("data-chat-side",side);
   }
@@ -212,7 +214,9 @@
       + '<section class="glass-card logs-table-card"><div class="logs-table-wrap"><table class="logs-table"><thead><tr><th>TIME</th><th>METHOD</th><th>ENDPOINT</th><th>STATUS</th><th>RESPONSE</th><th>API KEY</th><th></th></tr></thead><tbody id="logs-body"><tr><td colspan="7"><div class="logs-empty"><b>Loading logs…</b><span>Connecting to the API logging system.</span></div></td></tr></tbody></table></div></section>'
       + '<div class="log-detail-backdrop" id="log-detail-backdrop"><section class="log-detail-panel"><div class="log-detail-head"><div><span class="card-kicker">REQUEST DETAILS</span><h3 id="log-detail-title">API request</h3></div><button id="log-detail-close">×</button></div><div id="log-detail-content"></div></section></div>'
       + '</div>';
-  }\n\n  function genericContent(key){
+  }
+
+  function genericContent(key){
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
       '<section class="module-layout"><div class="glass-card module-main"><div class="card-head"><div><span class="card-kicker">READY</span><h3>'+esc(m[0])+' workspace</h3><p>Connected to the Game API developer console.</p></div><span class="health-badge"><i></i> Available</span></div><div class="module-actions"><button id="module-test" class="primary-btn">Run module check <b>→</b></button><a href="documentation.html" class="secondary-btn">Open docs</a></div><div class="module-status"><div><span>Environment</span><b>Production</b></div><div><span>Access</span><b>Authenticated</b></div><div><span>Interface</span><b>Responsive</b></div></div></div>'+
