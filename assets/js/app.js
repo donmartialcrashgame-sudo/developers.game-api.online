@@ -263,6 +263,14 @@
       if(temp) temp.onclick=function(){location.href="dashboard.html";};
       return;
     }
+    if(key==="dashboard"){
+      connectSupabase().then(function(sb){
+        if(!sb) return;
+        sb.auth.getSession().then(function(result){
+          if(!result.data || !result.data.session) location.replace("login.html");
+        }).catch(function(){ location.replace("login.html"); });
+      });
+    }
     var name=u.name||u.full_name||u.fullName||u.display_name||u.username||"Developer", email=u.email||"developer@example.com", initial=(name.charAt(0)||"D").toUpperCase();
 
     app.innerHTML =
