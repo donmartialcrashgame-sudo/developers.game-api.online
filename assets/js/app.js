@@ -215,6 +215,10 @@
         '<div class="glass-card activity-card"><div class="card-head"><div><span class="card-kicker">REAL-TIME</span><h3>API activity</h3><p>Only connected activity is shown here.</p></div><a href="logs.html">View logs →</a></div><div class="activity-list" id="dashboard-activity"><div class="dashboard-empty"><b>Live activity source not connected</b><span>No demo requests are displayed. Connect the real logging source to populate this panel.</span></div></div></div>'+
         '<div class="glass-card health-card"><div class="card-head"><div><span class="card-kicker">SYSTEM</span><h3>Service health</h3><p>Live status from the Game API service</p></div><span class="health-badge" id="dashboard-health-badge"><i></i> Checking</span></div><div class="health-visual"><div class="health-score" id="dashboard-health-score">—<small></small></div><div class="health-bars health-bars-live" id="dashboard-health-bars"></div></div><div class="health-footer"><span>API</span><b id="dashboard-api-health">Checking</b><span>WebSocket</span><b>Configured</b></div></div>'+
       '</section>'+
+      '<section class="dashboard-key-chart-grid">'+
+        '<div class="glass-card recent-key-card"><div class="card-head"><div><span class="card-kicker">API CREDENTIAL</span><h3>Recent API key</h3><p>Your latest issued credential from the connected key service</p></div><a href="api-keys.html">Manage keys →</a></div><div id="dashboard-recent-key"><div class="dashboard-empty"><b>Loading API key…</b><span>Reading your latest credential.</span></div></div></div>'+
+        '<div class="glass-card key-usage-chart-card"><div class="card-head"><div><span class="card-kicker">THIS MONTH</span><h3>API key usage</h3><p>Requests used by each connected key</p></div><span class="usage-badge" id="dashboard-chart-badge"><i></i> Loading</span></div><div id="dashboard-key-chart" class="dashboard-key-chart"><div class="dashboard-empty"><b>Loading usage…</b><span>Reading request counts from the API key service.</span></div></div></div>'+
+      '</section>'+
       '<section class="glass-card account-summary"><div class="card-head"><div><span class="card-kicker">YOUR ACCOUNT</span><h3 id="dashboard-user-heading">Authenticated developer</h3><p id="dashboard-user-subtitle">Loading your Supabase account details…</p></div><a href="profile.html">View profile →</a></div><div class="account-summary-grid"><div><span>NAME</span><b id="dashboard-user-name">Loading…</b></div><div><span>EMAIL</span><b id="dashboard-user-email">Loading…</b></div><div><span>USER ID</span><b id="dashboard-user-id">Loading…</b></div><div><span>AUTH PROVIDER</span><b id="dashboard-user-provider">Loading…</b></div></div></section>'+
       '<section class="live-monitor glass-card"><div class="live-monitor-head"><div><span class="card-kicker">WORKSPACE FLOW</span><h3>Build with Game API</h3><p>A clear path from account setup to your first live integration.</p></div><span class="stream-status"><i></i> READY</span></div><div class="dashboard-flow"><a href="how-to-use-gameapi.html"><span>01</span><b>Learn the flow</b><small>Authentication, API keys and requests</small><i>→</i></a><a href="api-keys.html" id="dashboard-key-action-wrap"><span>02</span><b id="dashboard-key-action">Create an API key</b><small id="dashboard-key-summary">Checking your API keys…</small><i>→</i></a><a href="documentation.html"><span>03</span><b>Choose an endpoint</b><small>Follow the request and response documentation</small><i>→</i></a><a href="logs.html"><span>04</span><b>Inspect activity</b><small>Review real recorded requests when available</small><i>→</i></a></div></section>'+
       '<section class="glass-card tools-card"><div class="card-head"><div><span class="card-kicker">WORKSPACE</span><h3>Developer tools</h3><p>Jump into the tools you use most</p></div></div><div class="tool-grid">'+
@@ -603,6 +607,40 @@
     }
   }
 
+  function renderDashboardRecentKey(rows){
+    var host=document.getElementById("dashboard-recent-key");
+    if(!host)return;
+    if(!rows.length){
+      host.innerHTML='<div class="dashboard-empty"><b>No API keys found</b><span>Create an API key to connect your application to Game API.</span></div>';
+      return;
+    }
+    var latest=rows.slice().sort(function(a,b){return new Date(b.created_at||0)-new Date(a.created_at||0);})[0];
+    var status=String(latest.status||"active").toLowerCase();
+    var prefix=latest.key_prefix||latest.prefix||"gk_live";
+    var last=latest.key_last4||latest.last4||"";
+    var safeKey=prefix+(last?"_••••••••"+last:"_••••••••");
+    var issued=latest.created_at?new Date(latest.created_at):null;
+    var issuedText=issued&&!isNaN(issued.getTime())?issued.toLocaleString():"—";
+    host.innerHTML='<div class="recent-key-main"><div class="recent-key-icon">⌘</div><div class="recent-key-copy"><b>'+esc(latest.name||"Unnamed key")+'</b><code>'+esc(safeKey)+'</code><small>Issued '+esc(issuedText)+'</small></div><span class="recent-key-status '+(status==="revoked"?"revoked":"active")+'">'+esc(status.toUpperCase())+'</span></div>';
+  }
+
+  function renderDashboardKeyChart(rows){
+    var host=document.getElementById("dashboard-key-chart"),badge=document.getElementById("dashboard-chart-badge");
+    if(!host)return;
+    var data=rows.map(function(x){return {name:x.name||"Unnamed key",used:Number(x.requests_used||0)};});
+    var total=data.reduce(function(sum,x){return sum+x.used;},0);
+    var max=Math.max.apply(null,data.map(function(x){return x.used;}).concat([1]));
+    if(badge)badge.innerHTML='<i></i> '+total+' requests';
+    if(!rows.length){
+      host.innerHTML='<div class="dashboard-empty"><b>No API key usage yet</b><span>The chart will populate when your API keys have recorded requests.</span></div>';
+      return;
+    }
+    host.innerHTML='<div class="dashboard-chart-axis"><span>Requests</span><b>This month</b></div><div class="dashboard-chart-bars">'+data.slice(0,8).map(function(x){
+      var height=Math.max(8,Math.round((x.used/max)*100));
+      return '<div class="dashboard-chart-bar-wrap" title="'+esc(x.name)+' · '+x.used+' requests"><div class="dashboard-chart-value">'+x.used+'</div><div class="dashboard-chart-bar" style="height:'+height+'%"></div><span>'+esc(x.name)+'</span></div>';
+    }).join("")+'</div>';
+  }
+
   function initDashboardLive(){
     var statusUrl="https://api.game-api.online/api/v1/status";
 
@@ -709,6 +747,9 @@
           if(keySummary)keySummary.textContent=active+" active · "+rows.length+" total";
           var keyAction=document.getElementById("dashboard-key-action");
           if(keyAction)keyAction.textContent=active?"Manage API keys":"Create your first API key";
+
+          renderDashboardRecentKey(rows);
+          renderDashboardKeyChart(rows);
         }catch(keyError){
           setMetric(2,"—");
           var keySummary=document.getElementById("dashboard-key-summary");
