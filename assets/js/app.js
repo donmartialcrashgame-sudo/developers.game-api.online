@@ -9,7 +9,7 @@
       ["Analytics","analytics.html","◒","analytics"]
     ]},
     { id:"api", label:"API", icon:"⌁", items:[
-      ["API Keys","keys.html","⌘","keys"],
+      ["API Keys","api-keys.html","⌘","keys"],
       ["Documentation","documentation.html","▤","documentation"],
       ["How to Use Game API","how-to-use-gameapi.html","?","how-to-use-gameapi"],
       ["Endpoints","endpoints.html","↗","endpoints"],
@@ -324,9 +324,73 @@
       });
   }
 
+  function apiKeysContent(){
+    return '<div class="keys-page">'+
+      '<section class="keys-hero glass-card"><div><span class="eyebrow">GAME API · CREDENTIALS</span><h2>Your API credentials, tied to your account.</h2><p>Keys shown here are loaded from the connected Game API management service. Secret values are never recreated or displayed after creation.</p></div><button class="primary-btn" id="keys-refresh">Refresh keys <b>↻</b></button></section>'+
+      '<section class="metric-grid keys-metrics">'+
+        metric("API KEYS","—","Loading connected key records","⌘","blue","Live data")+
+        metric("ACTIVE","—","From your returned key records","●","green","Live data")+
+        metric("REVOKED","—","From your returned key records","×","purple","Live data")+
+        metric("LAST USED","—","Latest recorded key activity","◷","orange","Live data")+
+      '</section>'+
+      '<section class="glass-card keys-list-card"><div class="card-head"><div><span class="card-kicker">CONNECTED CREDENTIALS</span><h3>API keys</h3><p>Only keys belonging to the authenticated account should be returned by the management API.</p></div><span class="usage-badge" id="keys-source-badge"><i></i> Loading</span></div><div id="api-keys-list" class="api-keys-list"><div class="keys-empty"><b>Loading API keys…</b><span>Reading your connected credentials.</span></div></div></section>'+
+      '<section class="keys-security-grid"><div class="glass-card key-security"><span class="key-security-icon">◇</span><div><b>Keep your secret private</b><p>The dashboard displays safe key metadata only. Never paste a full secret into chat, public repositories or client-side code.</p></div></div><div class="glass-card key-security"><span class="key-security-icon">↻</span><div><b>Refresh after changes</b><p>After creating, rotating or revoking a key through the connected management service, refresh this page to read the latest records.</p></div></div></section>'+
+      '</div>';
+  }
+
+  function initApiKeys(){
+    var list=document.getElementById("api-keys-list"), badge=document.getElementById("keys-source-badge");
+    var refresh=document.getElementById("keys-refresh");
+    function setMessage(title,msg,error){
+      if(list)list.innerHTML='<div class="keys-empty '+(error?"error":"")+'"><b>'+esc(title)+'</b><span>'+esc(msg)+'</span></div>';
+    }
+    function render(data){
+      var rows=Array.isArray(data)?data:(data&&Array.isArray(data.data)?data.data:(data&&Array.isArray(data.keys)?data.keys:[]));
+      var active=rows.filter(function(x){return String(x.status||"active").toLowerCase()==="active"}).length;
+      var revoked=rows.filter(function(x){return String(x.status||"").toLowerCase()==="revoked"}).length;
+      var latest=rows.map(function(x){return x.last_used_at||x.last_used||""}).filter(Boolean).sort().pop()||"—";
+      var cards=document.querySelectorAll(".keys-metrics .metric");
+      if(cards[0])cards[0].querySelector("strong").textContent=String(rows.length);
+      if(cards[1])cards[1].querySelector("strong").textContent=String(active);
+      if(cards[2])cards[2].querySelector("strong").textContent=String(revoked);
+      if(cards[3])cards[3].querySelector("strong").textContent=latest==="—"?"—":new Date(latest).toLocaleDateString();
+      if(!rows.length){setMessage("No API keys returned","The connected service returned no keys for this authenticated account.");return;}
+      list.innerHTML=rows.map(function(x){
+        var status=String(x.status||"active").toLowerCase(), safeStatus=status==="revoked"?"revoked":"active";
+        var prefix=x.key_prefix||x.prefix||"Key";
+        var name=x.name||"Unnamed key";
+        var created=x.created_at?new Date(x.created_at).toLocaleString():"—";
+        var used=x.last_used_at||x.last_used;
+        return '<article class="api-key-row"><div class="api-key-main"><div class="api-key-icon">⌘</div><div><b>'+esc(name)+'</b><span>'+esc(prefix)+'••••</span></div></div><div class="api-key-meta"><div><span>STATUS</span><b class="'+safeStatus+'">'+esc(status.toUpperCase())+'</b></div><div><span>CREATED</span><b>'+esc(created)+'</b></div><div><span>LAST USED</span><b>'+esc(used?new Date(used).toLocaleString():"Never recorded")+'</b></div><div><span>KEY ID</span><b>'+esc(x.id||"—")+'</b></div></div></article>';
+      }).join("");
+    }
+    async function load(){
+      setMessage("Loading API keys…","Reading your connected credentials.");
+      if(badge)badge.innerHTML="<i></i> Loading";
+      try{
+        var sb=await connectSupabase();
+        if(!sb)throw new Error("Supabase is unavailable");
+        var sessionResult=await sb.auth.getSession(), session=sessionResult.data&&sessionResult.data.session;
+        if(!session) { location.replace("login.html"); return; }
+        var response=await fetch("https://api.game-api.online/api/keys",{method:"GET",headers:{"Accept":"application/json","Authorization":"Bearer "+session.access_token}});
+        var textBody=await response.text(), payload={};
+        try{payload=textBody?JSON.parse(textBody):{};}catch(e){}
+        if(!response.ok)throw new Error("The key service returned HTTP "+response.status);
+        render(payload);
+        if(badge)badge.innerHTML="<i></i> Live source";
+      }catch(e){
+        setMessage("Unable to load live API keys","The authenticated key service could not be read right now. "+(e.message||"Please try again."),true);
+        if(badge)badge.innerHTML="<i></i> Unavailable";
+      }
+    }
+    if(refresh)refresh.onclick=load;
+    load();
+  }
+
   function genericContent(key){
     if(key==="overview") return overviewContent();
     if(key==="usage") return usageContent();
+    if(key==="keys") return apiKeysContent();
     if(key==="how-to-use-gameapi") return howToUseContent();
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
@@ -376,6 +440,7 @@
       '</div>';
 
     bind(key); saveChatSide(loadChatSide());
+    refreshAuthenticatedChrome();
     if(key==="dashboard"){
       connectSupabase().then(async function(sb){
         if(!sb) return;
@@ -416,6 +481,9 @@
     }
     if(key==="usage"){
       initUsageLive();
+    }
+    if(key==="keys"){
+      initApiKeys();
     }
     if(key==="login"){
       var temp=document.getElementById("temporary-login");
@@ -504,6 +572,28 @@
         if(n)n.textContent=name;if(e)e.textContent=user.email||"";if(id)id.textContent=user.id||"";if(p)p.textContent=provider;if(a){a.textContent=(name.charAt(0)||"D").toUpperCase();if(md.avatar_url)a.innerHTML='<img src="'+esc(md.avatar_url)+'" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">';}
         var m=document.querySelector(".overview-metrics .metric:first-child strong");if(m)m.textContent="Connected";
       }catch(e){console.warn("Overview user load failed:",e);}
+    });
+  }
+
+  function refreshAuthenticatedChrome(){
+    connectSupabase().then(async function(sb){
+      if(!sb)return;
+      try{
+        var result=await sb.auth.getSession(),session=result.data&&result.data.session;
+        if(!session)return;
+        var user=session.user||{},md=user.user_metadata||{};
+        var name=md.full_name||md.name||md.user_name||md.preferred_username||((user.email||"").split("@")[0])||"Developer";
+        var email=user.email||"", avatar=md.avatar_url||md.picture||"";
+        var initial=(name.charAt(0)||"D").toUpperCase();
+        var fresh={name:name,email:email,id:user.id||"",avatar:avatar};
+        localStorage.setItem("gameapi_user",JSON.stringify(fresh));
+        document.querySelectorAll(".account-meta b,.account-menu-head b").forEach(function(el){el.textContent=name;});
+        document.querySelectorAll(".account-meta small,.account-menu-head small").forEach(function(el){el.textContent=email;});
+        document.querySelectorAll(".avatar").forEach(function(el){
+          if(avatar)el.innerHTML='<img src="'+esc(avatar)+'" alt="Profile photo" style="width:100%;height:100%;border-radius:inherit;object-fit:cover">';
+          else el.textContent=initial;
+        });
+      }catch(e){console.warn("Authenticated chrome refresh failed:",e);}
     });
   }
 
