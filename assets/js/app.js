@@ -300,15 +300,31 @@
         if(!sb) return;
         try{
           var result=await sb.auth.getSession();
-          if(result.data&&result.data.session){
-            var user=result.data.session.user||{};
-            var fresh={
-              name:(user.user_metadata&&((user.user_metadata.full_name)||(user.user_metadata.name)))||u.name||name,
-              email:user.email||email
-            };
-            localStorage.setItem("gameapi_user",JSON.stringify(fresh));
+          if(!result.data||!result.data.session){
+            location.replace("login.html");
+            return;
           }
-        }catch(e){}
+          var user=result.data.session.user||{};
+          var md=user.user_metadata||{};
+          var realName=md.full_name||md.name||md.user_name||md.preferred_username||((user.email||"").split("@")[0])||"Developer";
+          var realEmail=user.email||"";
+          var fresh={name:realName,email:realEmail,id:user.id,avatar:md.avatar_url||md.picture||""};
+          localStorage.setItem("gameapi_user",JSON.stringify(fresh));
+          var realInitial=(realName.charAt(0)||"D").toUpperCase();
+          document.querySelectorAll(".account-meta b,.account-menu-head b").forEach(function(el){el.textContent=realName;});
+          document.querySelectorAll(".account-meta small,.account-menu-head small").forEach(function(el){el.textContent=realEmail;});
+          document.querySelectorAll(".avatar").forEach(function(el){el.textContent=realInitial;});
+          var accountAvatar=document.querySelector(".account-btn .avatar");
+          if(accountAvatar&&fresh.avatar){
+            accountAvatar.innerHTML='<img src="'+esc(fresh.avatar)+'" alt="" style="width:100%;height:100%;border-radius:inherit;object-fit:cover">';
+          }
+          var menuAvatar=document.querySelector(".account-menu-head .avatar");
+          if(menuAvatar&&fresh.avatar){
+            menuAvatar.innerHTML='<img src="'+esc(fresh.avatar)+'" alt="" style="width:100%;height:100%;border-radius:inherit;object-fit:cover">';
+          }
+        }catch(e){
+          console.warn("Unable to load authenticated Game API user:",e);
+        }
       });
     }
     if(key==="login"){
