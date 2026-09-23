@@ -509,10 +509,105 @@
     load();
   }
 
+  function profileContent(){
+    return '<div class="profile-page">'+
+      '<section class="profile-hero glass-card">'+
+        '<div class="profile-hero-bg"></div>'+
+        '<div class="profile-identity">'+
+          '<div class="profile-avatar-large" id="profile-avatar">D</div>'+
+          '<div><span class="eyebrow">GAME API · ACCOUNT</span><h2 id="profile-display-name">Loading profile…</h2><p id="profile-display-email">Loading account details…</p><div class="profile-badges"><span class="health-badge"><i></i> Authenticated</span><span class="profile-provider" id="profile-provider">Provider</span></div></div>'+
+        '</div>'+
+        '<div class="profile-hero-actions"><a class="secondary-btn" href="subscription.html">View subscription</a><button class="primary-btn" id="profile-save-top">Save changes <b>→</b></button></div>'+
+      '</section>'+
+      '<section class="profile-layout">'+
+        '<div class="glass-card profile-form-card">'+
+          '<div class="card-head"><div><span class="card-kicker">PERSONAL INFORMATION</span><h3>Your profile</h3><p>Update the developer information shown across your Game API workspace.</p></div><span class="usage-badge" id="profile-save-status"><i></i> Synced</span></div>'+
+          '<form id="profile-form" class="profile-form">'+
+            '<div class="profile-form-grid">'+
+              '<label>DISPLAY NAME<input id="profile-name" maxlength="120" autocomplete="name" placeholder="Your name"></label>'+
+              '<label>EMAIL ADDRESS<input id="profile-email" type="email" readonly autocomplete="email"></label>'+
+            '</div>'+
+            '<label>PROFILE PHOTO URL<input id="profile-avatar-url" type="url" maxlength="500" placeholder="https://…"></label>'+
+            '<div class="profile-preview"><div class="profile-preview-avatar" id="profile-preview-avatar">D</div><div><b>Profile appearance</b><span>Your avatar and name are used in the developer console header.</span></div></div>'+
+            '<div class="profile-actions"><button type="submit" class="primary-btn" id="profile-save">Save profile <b>→</b></button><button type="button" class="secondary-btn" id="profile-reset">Reset</button></div>'+
+          '</form>'+
+        '</div>'+
+        '<aside class="profile-side">'+
+          '<div class="glass-card profile-account-card"><div class="card-head"><div><span class="card-kicker">ACCOUNT</span><h3>Account details</h3></div></div><div class="profile-details"><div><span>USER ID</span><code id="profile-user-id">Loading…</code></div><div><span>AUTH PROVIDER</span><b id="profile-auth-provider">Loading…</b></div><div><span>ACCOUNT CREATED</span><b id="profile-created">Loading…</b></div><div><span>EMAIL STATUS</span><b id="profile-email-status">Loading…</b></div></div></div>'+
+          '<div class="glass-card profile-security-card"><div class="card-head"><div><span class="card-kicker">SECURITY</span><h3>Account security</h3><p>Keep your account credentials protected.</p></div></div><div class="security-row"><span>Session</span><b class="active">Active</b></div><a class="quick-control" href="security.html">Security settings <span>→</span></a><a class="quick-control" href="authentication.html">Authentication settings <span>→</span></a></div>'+
+        '</aside>'+
+      '</section>'+
+    '</div>';
+  }
+
+  function initProfile(){
+    var form=document.getElementById("profile-form");
+    if(!form)return;
+    var nameInput=document.getElementById("profile-name"), emailInput=document.getElementById("profile-email"), avatarInput=document.getElementById("profile-avatar-url");
+    var displayName=document.getElementById("profile-display-name"), displayEmail=document.getElementById("profile-display-email"), avatar=document.getElementById("profile-avatar"), preview=document.getElementById("profile-preview-avatar");
+    var providerEl=document.getElementById("profile-provider"), provider2=document.getElementById("profile-auth-provider"), userId=document.getElementById("profile-user-id"), created=document.getElementById("profile-created"), emailStatus=document.getElementById("profile-email-status"), status=document.getElementById("profile-save-status");
+
+    function applyAvatar(el,url,initial){
+      if(!el)return;
+      if(url) el.innerHTML='<img src="'+esc(url)+'" alt="Profile photo">';
+      else el.textContent=initial;
+    }
+    function syncPreview(){
+      var n=(nameInput.value||"").trim()||"Developer", url=(avatarInput.value||"").trim(), initial=(n.charAt(0)||"D").toUpperCase();
+      displayName.textContent=n; displayEmail.textContent=emailInput.value||"";
+      applyAvatar(avatar,url,initial); applyAvatar(preview,url,initial);
+    }
+    function setStatus(text,error){
+      if(status)status.innerHTML='<i></i> '+esc(text);
+      if(status)status.classList.toggle("error",!!error);
+    }
+    async function load(){
+      try{
+        var sb=await connectSupabase(); if(!sb)throw new Error("Supabase is unavailable.");
+        var auth=await sb.auth.getSession(), session=auth.data&&auth.data.session;
+        if(!session){location.replace("login.html");return;}
+        var user=session.user||{}, md=user.user_metadata||{}, appmd=user.app_metadata||{};
+        var name=md.full_name||md.name||md.user_name||md.preferred_username||((user.email||"").split("@")[0])||"Developer";
+        var provider=appmd.provider||"email", avatarUrl=md.avatar_url||md.picture||"";
+        nameInput.value=name; emailInput.value=user.email||""; avatarInput.value=avatarUrl;
+        userId.textContent=user.id||"—"; providerEl.textContent=provider; provider2.textContent=provider;
+        created.textContent=user.created_at?new Date(user.created_at).toLocaleString():"—";
+        emailStatus.textContent=user.email_confirmed_at?"Verified":"Not verified";
+        syncPreview(); setStatus("Synced");
+      }catch(e){setStatus(e.message||"Unable to load profile.",true);}
+    }
+    async function save(){
+      var n=(nameInput.value||"").trim(), url=(avatarInput.value||"").trim();
+      if(!n){notify("error","Profile update","Please enter a display name.");return;}
+      setStatus("Saving…"); document.getElementById("profile-save").disabled=true;
+      try{
+        var sb=await connectSupabase(); if(!sb)throw new Error("Supabase is unavailable.");
+        var result=await sb.auth.updateUser({data:{full_name:n,avatar_url:url}});
+        if(result.error)throw result.error;
+        var user=result.data&&result.data.user||{};
+        var provider=(user.app_metadata&&user.app_metadata.provider)||"email";
+        var fresh={name:n,email:user.email||emailInput.value,id:user.id||userId.textContent,avatar:url};
+        localStorage.setItem("gameapi_user",JSON.stringify(fresh));
+        document.querySelectorAll(".account-meta b,.account-menu-head b").forEach(function(el){el.textContent=n;});
+        document.querySelectorAll(".account-meta small,.account-menu-head small").forEach(function(el){el.textContent:fresh.email;});
+        document.querySelectorAll(".avatar").forEach(function(el){applyAvatar(el,url,(n.charAt(0)||"D").toUpperCase());});
+        providerEl.textContent=provider; provider2.textContent=provider; syncPreview(); setStatus("Saved just now");
+        notify("success","Profile updated","Your developer profile has been saved.");
+      }catch(e){setStatus(e.message||"Could not save profile.",true);notify("error","Profile update failed",e.message||"Please try again.");}
+      finally{document.getElementById("profile-save").disabled=false;}
+    }
+    nameInput.oninput=syncPreview; avatarInput.oninput=syncPreview;
+    form.onsubmit=function(e){e.preventDefault();save();};
+    document.getElementById("profile-save-top").onclick=save;
+    document.getElementById("profile-reset").onclick=load;
+    load();
+  }
+
   function genericContent(key){
     if(key==="overview") return overviewContent();
     if(key==="usage") return usageContent();
     if(key==="keys") return apiKeysContent();
+    if(key==="profile") return profileContent();
     if(key==="how-to-use-gameapi") return howToUseContent();
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
@@ -606,6 +701,9 @@
     }
     if(key==="keys"){
       initApiKeys();
+    }
+    if(key==="profile"){
+      initProfile();
     }
     if(key==="login"){
       var temp=document.getElementById("temporary-login");
