@@ -84,7 +84,9 @@
 
   function pageKey(){
     var p = location.pathname.split("/").pop().replace(/\.html$/,"");
-    return !p ? "login" : p === "index" ? "login" : p;
+    if(!p || p==="index") return "login";
+    if(p==="api-keys") return "keys";
+    return p;
   }
 
   var SUPABASE_URL="https://qbagxeqquskkjksoraiz.supabase.co";
