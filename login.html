@@ -104,6 +104,17 @@ function clearMessage(){
   $("message").textContent="";
   $("message").className="auth-message";
 }
+function readableAuthError(error,fallback){
+  if(typeof error==="string" && error.trim()) return error;
+  if(error?.message) return String(error.message);
+  if(error?.error_description) return String(error.error_description);
+  if(error?.error) return typeof error.error==="string"?error.error:JSON.stringify(error.error);
+  try{
+    const json=JSON.stringify(error);
+    if(json && json!=="{}") return json;
+  }catch{}
+  return fallback;
+}
 
 const existing=await supabase.auth.getSession();
 if(existing.data.session) location.replace("dashboard.html");
@@ -209,7 +220,7 @@ async function sendPasswordless(mode){
     passwordlessMethod="";
     button.disabled=false;
     other.disabled=false;
-    showMessage(error.message||"Could not send the email sign-in message.");
+    showMessage(readableAuthError(error,"Could not send the email OTP. Check that email authentication and your Supabase SMTP/email template are enabled."));
   }finally{
     button.textContent=mode==="otp"?"Send OTP code":"Send email link";
   }
@@ -239,7 +250,7 @@ async function autoVerifyOtp(){
     $("otpInput").disabled=false;
     $("resendOtpBtn").disabled=false;
     $("otpStatus").textContent="That code could not be verified. Check the code and try again.";
-    showMessage(error.message||"That OTP could not be verified.");
+    showMessage(readableAuthError(error,"That OTP could not be verified."));
     $("otpInput").select();
   }
 };
@@ -270,7 +281,7 @@ $("loginForm").onsubmit=async event=>{
     if(!data.session) throw new Error("No authenticated session was created.");
     location.replace("dashboard.html");
   }catch(error){
-    showMessage(error.message||"Sign-in failed. Please check your details.");
+    showMessage(readableAuthError(error,"Sign-in failed. Please check your details."));
   }finally{
     $("emailBtn").disabled=false;
     $("emailBtn").textContent="Sign in to console";
