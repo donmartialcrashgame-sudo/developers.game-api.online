@@ -46,7 +46,7 @@
 </form>
 <div class="terms">By creating an account, you agree to use Game API responsibly and keep your account credentials secure.</div>
 <div class="otp-step" id="otpStep">
-  <div class="otp-copy">We sent a verification code to <strong id="signupEmailLabel"></strong>. Enter it below to verify your email and finish creating your account.</div>
+  <div class="otp-copy">We sent a 6-digit OTP to <strong id="signupEmailLabel"></strong>. Enter the code below to verify your email and finish creating your account.</div>
   <input class="otp-input" id="signupOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="••••••">
   <div class="otp-actions">
     <button class="otp-action otp-primary" id="verifySignupOtp" type="button">Verify email</button>
@@ -95,7 +95,7 @@ $("registerForm").onsubmit=async event=>{
   $("otpStep").classList.add("show");
   $("signupOtp").value="";
   $("signupOtp").focus();
-  showMessage("Verification code sent. Check your email and enter the code here.","success");
+  showMessage("Your email OTP has been sent. Check your email for the 6-digit code and enter it here.","success");
  }catch(error){showMessage(error.message||"Account creation failed. Please try again.")}
  finally{$("registerBtn").disabled=false;$("registerBtn").textContent="Create account"}
 };
@@ -111,7 +111,7 @@ async function resendSignupOtp(){
       options:{emailRedirectTo:CALLBACK_URL}
     });
     if(error) throw error;
-    showMessage("A new verification code was sent to your email.","success");
+    showMessage("A new email OTP was sent to your email.","success");
   }catch(error){
     showMessage(error.message||"Could not resend the verification code.");
   }finally{
@@ -135,7 +135,7 @@ $("verifySignupOtp").onclick=async()=>{
     showMessage("Email verified. Opening your developer console…","success");
     setTimeout(()=>location.replace("callback.html"),250);
   }catch(error){
-    showMessage(error.message||"That verification code could not be verified.");
+    showMessage(error.message||"That email OTP could not be verified.");
   }finally{
     $("verifySignupOtp").disabled=false;
     $("verifySignupOtp").textContent="Verify email";
