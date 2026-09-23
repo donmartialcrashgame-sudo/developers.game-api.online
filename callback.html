@@ -36,7 +36,7 @@ import{createClient}from"https://esm.sh/@supabase/supabase-js@2.105.0";
 const SUPABASE_URL="https://qbagxeqquskkjksoraiz.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_chfRxHSFPSA1SZJtBajtKA_I7vs8R--";
 const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
-  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"implicit"}
 });
 
 const statusEl=document.getElementById("status");
@@ -51,10 +51,7 @@ try{
 
   if(authError) throw new Error(decodeURIComponent(authError));
 
-  if(code){
-    const{error}=await supabase.auth.exchangeCodeForSession(code);
-    if(error) throw error;
-  }
+  if(code) throw new Error("Unexpected authorization code. Please restart Google sign-in.");
 
   const{data,error}=await supabase.auth.getSession();
   if(error) throw error;
