@@ -106,6 +106,7 @@ function readableAuthError(error,fallback){
   return fallback;
 }
 
+function currentEmail(){ return $("email").value.trim().toLowerCase(); }
 const existing=await supabase.auth.getSession();
 if(existing.data.session) location.replace("dashboard.html");
 
