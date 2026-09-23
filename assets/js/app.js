@@ -203,20 +203,20 @@
         '<div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> GAME API · AUTHENTICATED WORKSPACE</div>'+
         '<h2>Your developer workspace, <span>connected to your account.</span></h2>'+
         '<p>Manage your real Game API account, credentials and integrations from one workspace. Live values are loaded from your authenticated session and connected services — no sample activity is shown.</p>'+
-        '<div class="hero-actions"><a href="api-keys.html" class="primary-btn">Manage API Keys <b>→</b></a><a href="how-to-use-gameapi.html" class="secondary-btn">How to use Game API</a></div></div>'+
+        '<div class="hero-actions"><a href="api-keys.html" class="primary-btn">Manage API Keys <b>→</b></a><a href="documentation.html" class="secondary-btn">Read documentation</a><a href="how-to-use-gameapi.html" class="secondary-btn">How to use Game API</a></div></div>'+
         '<div class="hero-visual"><div class="visual-glow"></div><div class="signal-ring r1"></div><div class="signal-ring r2"></div><div class="signal-ring r3"></div><div class="signal-core"><span>G</span><i></i></div><div class="float-chip chip-a">ACCOUNT <b>LIVE</b></div><div class="float-chip chip-b">AUTH <b>CONNECTED</b></div><div class="float-chip chip-c">API <b>ONLINE</b></div></div>'+
       '</section>'+
       '<section class="metric-grid real-metrics">'+
-        metric("ACCOUNT","Connected","Authenticated session","●","blue","Live"), metric("API STATUS","Checking…","api.game-api.online","●","green","Live"), metric("API KEYS","—","Loaded from workspace data","⌘","purple","Live data"), metric("USAGE","—","Waiting for usage source","◫","orange","Live data")+
+        metric("ACCOUNT","Connected","Authenticated session","●","blue","Live"), metric("API STATUS","Checking…","api.game-api.online","●","green","Live"), metric("API KEYS","—","Connected key records","⌘","purple","Live data"), metric("USAGE","—","Awaiting usage source","◫","orange","Live data")+
       '</section>'+
       '<section class="dashboard-grid">'+
         '<div class="glass-card activity-card"><div class="card-head"><div><span class="card-kicker">REAL-TIME</span><h3>API activity</h3><p>Only connected activity is shown here.</p></div><a href="logs.html">View logs →</a></div><div class="activity-list" id="dashboard-activity"><div class="dashboard-empty"><b>Live activity source not connected</b><span>No demo requests are displayed. Connect the real logging source to populate this panel.</span></div></div></div>'+
-        '<div class="glass-card health-card"><div class="card-head"><div><span class="card-kicker">SYSTEM</span><h3>Service health</h3><p>Live status from the Game API service</p></div><span class="health-badge" id="dashboard-health-badge"><i></i> Checking</span></div><div class="health-visual"><div class="health-score" id="dashboard-health-score">—<small></small></div><div class="health-bars health-bars-live" id="dashboard-health-bars"></div></div><div class="health-footer"><span>API</span><b id="dashboard-api-health">Checking</b><span>WebSocket</span><b>Endpoint configured separately</b></div></div>'+
+        '<div class="glass-card health-card"><div class="card-head"><div><span class="card-kicker">SYSTEM</span><h3>Service health</h3><p>Live status from the Game API service</p></div><span class="health-badge" id="dashboard-health-badge"><i></i> Checking</span></div><div class="health-visual"><div class="health-score" id="dashboard-health-score">—<small></small></div><div class="health-bars health-bars-live" id="dashboard-health-bars"></div></div><div class="health-footer"><span>API</span><b id="dashboard-api-health">Checking</b><span>WebSocket</span><b>Configured</b></div></div>'+
       '</section>'+
       '<section class="glass-card account-summary"><div class="card-head"><div><span class="card-kicker">YOUR ACCOUNT</span><h3 id="dashboard-user-heading">Authenticated developer</h3><p id="dashboard-user-subtitle">Loading your Supabase account details…</p></div><a href="profile.html">View profile →</a></div><div class="account-summary-grid"><div><span>NAME</span><b id="dashboard-user-name">Loading…</b></div><div><span>EMAIL</span><b id="dashboard-user-email">Loading…</b></div><div><span>USER ID</span><b id="dashboard-user-id">Loading…</b></div><div><span>AUTH PROVIDER</span><b id="dashboard-user-provider">Loading…</b></div></div></section>'+
-      '<section class="live-monitor glass-card"><div class="live-monitor-head"><div><span class="card-kicker">WORKSPACE FLOW</span><h3>Build with Game API</h3><p>A clear path from account setup to your first live integration.</p></div><span class="stream-status"><i></i> READY</span></div><div class="dashboard-flow"><a href="how-to-use-gameapi.html"><span>01</span><b>Learn the flow</b><small>Authentication, API keys and requests</small><i>→</i></a><a href="api-keys.html"><span>02</span><b>Create an API key</b><small>Use a key from your authenticated workspace</small><i>→</i></a><a href="documentation.html"><span>03</span><b>Choose an endpoint</b><small>Follow the request and response documentation</small><i>→</i></a><a href="logs.html"><span>04</span><b>Inspect activity</b><small>Review real recorded requests when available</small><i>→</i></a></div></section>'+
+      '<section class="live-monitor glass-card"><div class="live-monitor-head"><div><span class="card-kicker">WORKSPACE FLOW</span><h3>Build with Game API</h3><p>A clear path from account setup to your first live integration.</p></div><span class="stream-status"><i></i> READY</span></div><div class="dashboard-flow"><a href="how-to-use-gameapi.html"><span>01</span><b>Learn the flow</b><small>Authentication, API keys and requests</small><i>→</i></a><a href="api-keys.html" id="dashboard-key-action-wrap"><span>02</span><b id="dashboard-key-action">Create an API key</b><small id="dashboard-key-summary">Checking your API keys…</small><i>→</i></a><a href="documentation.html"><span>03</span><b>Choose an endpoint</b><small>Follow the request and response documentation</small><i>→</i></a><a href="logs.html"><span>04</span><b>Inspect activity</b><small>Review real recorded requests when available</small><i>→</i></a></div></section>'+
       '<section class="glass-card tools-card"><div class="card-head"><div><span class="card-kicker">WORKSPACE</span><h3>Developer tools</h3><p>Jump into the tools you use most</p></div></div><div class="tool-grid">'+
-        tool("⌘","API Keys","Create, rotate and revoke credentials","keys.html","blue")+tool("?","How to Use Game API","Follow the complete integration guide","how-to-use-gameapi.html","purple")+tool("⌁","WebSocket","Inspect live real-time events","websocket.html","blue")+tool("▤","Documentation","Learn the API reference","documentation.html","green")+
+        tool("⌘","API Keys","Create, rotate and revoke credentials","api-keys.html","blue")+tool("?","How to Use Game API","Follow the complete integration guide","how-to-use-gameapi.html","purple")+tool("⌁","WebSocket","Inspect live real-time events","websocket.html","blue")+tool("▤","Documentation","Learn the API reference","documentation.html","green")+
       '</div></section>'+
       '</div>';
   }
@@ -595,11 +595,24 @@
 
   function initDashboardLive(){
     var statusUrl="https://api.game-api.online/api/v1/status";
+
+    function setMetric(index,value){
+      var cards=document.querySelectorAll(".real-metrics .metric");
+      if(cards[index]){
+        var strong=cards[index].querySelector("strong");
+        if(strong)strong.textContent=value;
+      }
+    }
+
+    function setWelcome(name){
+      var el=document.getElementById("dashboard-welcome");
+      if(!el)return;
+      el.innerHTML="Welcome back, <span>"+esc(name)+"</span>.";
+    }
+
     fetch(statusUrl,{method:"GET",headers:{"Accept":"application/json"}})
       .then(function(r){return r.text().then(function(t){return {ok:r.ok,status:r.status,text:t};});})
       .then(function(result){
-        var payload={};
-        try{payload=result.text?JSON.parse(result.text):{};}catch(e){}
         var operational=result.ok && result.status>=200 && result.status<300;
         var label=operational?"Operational":"Unavailable";
         var health=document.getElementById("dashboard-api-health");
@@ -609,43 +622,91 @@
         var liveStatus=document.getElementById("live-service-status");
         var footerService=document.getElementById("live-footer-service");
         var footerStatus=document.getElementById("live-footer-status");
-        if(health) health.textContent=label;
-        if(badge) badge.innerHTML='<i></i> '+esc(label);
-        if(score) score.innerHTML=operational?'OK<small>LIVE</small>':'—<small>CHECK</small>';
-        if(bars) bars.innerHTML=Array.from({length:12}).map(function(){return '<i></i>';}).join("");
-        if(liveStatus) liveStatus.textContent=label.toUpperCase();
-        if(footerService) footerService.textContent="Game API";
-        if(footerStatus){footerStatus.textContent=label;footerStatus.className=operational?"live-green":"";}
-        var metric=document.querySelector(".real-metrics .metric:nth-child(2) strong");
-        if(metric) metric.textContent=operational?"Operational":"Unavailable";
+        if(health)health.textContent=label;
+        if(badge)badge.innerHTML='<i></i> '+esc(label);
+        if(score)score.innerHTML=operational?'OK<small>LIVE</small>':'—<small>CHECK</small>';
+        if(bars)bars.innerHTML=Array.from({length:12}).map(function(){return '<i></i>';}).join("");
+        if(liveStatus)liveStatus.textContent=label.toUpperCase();
+        if(footerService)footerService.textContent="Game API";
+        if(footerStatus){
+          footerStatus.textContent=label;
+          footerStatus.className=operational?"live-green":"";
+        }
+        setMetric(1,label);
       })
       .catch(function(){
         var health=document.getElementById("dashboard-api-health");
-        if(health) health.textContent="Unavailable";
+        if(health)health.textContent="Unavailable";
         var badge=document.getElementById("dashboard-health-badge");
-        if(badge) badge.innerHTML='<i></i> Unavailable';
-        var status=document.getElementById("live-service-status");
-        if(status) status.textContent="UNAVAILABLE";
+        if(badge)badge.innerHTML='<i></i> Unavailable';
+        var score=document.getElementById("dashboard-health-score");
+        if(score)score.innerHTML='—<small>CHECK</small>';
+        var liveStatus=document.getElementById("live-service-status");
+        if(liveStatus)liveStatus.textContent="UNAVAILABLE";
+        setMetric(1,"Unavailable");
       });
 
     connectSupabase().then(async function(sb){
       if(!sb)return;
       try{
         var result=await sb.auth.getSession();
-        if(!result.data||!result.data.session)return;
-        var user=result.data.session.user||{};
+        if(!result.data || !result.data.session){
+          location.replace("login.html");
+          return;
+        }
+
+        var session=result.data.session;
+        var user=session.user||{};
         var md=user.user_metadata||{};
         var provider=(user.app_metadata&&user.app_metadata.provider)||"email";
         var realName=md.full_name||md.name||md.user_name||md.preferred_username||((user.email||"").split("@")[0])||"Developer";
-        var n=document.getElementById("dashboard-user-name"), e=document.getElementById("dashboard-user-email"), id=document.getElementById("dashboard-user-id"), p=document.getElementById("dashboard-user-provider"), sub=document.getElementById("dashboard-user-subtitle");
+        var realEmail=user.email||"";
+
+        setWelcome(realName);
+        setMetric(0,"Connected");
+
+        var n=document.getElementById("dashboard-user-name");
+        var e=document.getElementById("dashboard-user-email");
+        var id=document.getElementById("dashboard-user-id");
+        var p=document.getElementById("dashboard-user-provider");
+        var sub=document.getElementById("dashboard-user-subtitle");
         if(n)n.textContent=realName;
-        if(e)e.textContent=user.email||"";
+        if(e)e.textContent=realEmail;
         if(id)id.textContent=user.id||"";
         if(p)p.textContent=provider;
-        if(sub)sub.textContent="Signed in as "+(user.email||realName)+".";
-        var keyMetric=document.querySelector(".real-metrics .metric:first-child strong");
-        if(keyMetric)keyMetric.textContent="Connected";
-      }catch(e){console.warn("Dashboard user refresh failed:",e);}
+        if(sub)sub.textContent="Signed in as "+(realEmail||realName)+".";
+
+        try{
+          var response=await fetch("https://api.game-api.online/api/keys",{
+            method:"GET",
+            headers:{
+              "Accept":"application/json",
+              "Authorization":"Bearer "+session.access_token
+            }
+          });
+          var raw=await response.text();
+          var payload={};
+          try{payload=raw?JSON.parse(raw):{};}catch(ignore){}
+          if(response.status===401){
+            location.replace("login.html");
+            return;
+          }
+          if(!response.ok) throw new Error(payload.error||payload.message||("Key service returned HTTP "+response.status));
+          var rows=Array.isArray(payload)?payload:(Array.isArray(payload.keys)?payload.keys:(Array.isArray(payload.data)?payload.data:[]));
+          var active=rows.filter(function(x){return String(x.status||"active").toLowerCase()==="active";}).length;
+          setMetric(2,String(rows.length));
+          var keySummary=document.getElementById("dashboard-key-summary");
+          if(keySummary)keySummary.textContent=active+" active · "+rows.length+" total";
+          var keyAction=document.getElementById("dashboard-key-action");
+          if(keyAction)keyAction.textContent=active?"Manage API keys":"Create your first API key";
+        }catch(keyError){
+          setMetric(2,"—");
+          var keySummary=document.getElementById("dashboard-key-summary");
+          if(keySummary)keySummary.textContent="Key service unavailable";
+        }
+      }catch(e){
+        console.warn("Dashboard authenticated data refresh failed:",e);
+      }
     });
   }
 
