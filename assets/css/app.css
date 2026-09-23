@@ -58,3 +58,9 @@ body{background:radial-gradient(circle at 72% -10%,rgba(37,99,235,.14),transpare
 .alert{background:#0b1628;border-color:#1c2f4d;color:#e8f0fc}.alert-copy span{color:#7d91af}.alert button{color:#7890ad}.bubble{background:#0c182a;border-color:#1b2e4a;color:#dce8f8}.chat-body{background:#06101f}.chat-panel,.chat-panel form{background:#0a1527;border-color:#1a2d49}.chat-panel input{background:#071122;border-color:#1b304d;color:#dce8f8}.chat-panel input::placeholder{color:#5f7594}
 @keyframes liveSweep{0%,100%{transform:translateX(-8%) rotate(-8deg);opacity:.45}50%{transform:translateX(8%) rotate(-8deg);opacity:1}}@keyframes monitorPulse{0%,100%{transform:translate(-50%,-50%) scale(.96)}50%{transform:translate(-50%,-50%) scale(1.04)}}@keyframes dotFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
 @media(max-width:760px){.monitor-stage{height:205px}.monitor-footer{grid-template-columns:repeat(2,1fr)}.nav-section{border-radius:0!important}.nav-section:first-child{border-radius:10px 10px 0 0!important}.nav-section:last-child{border-radius:0 0 10px 10px!important}}
+
+/* Shared dashboard controls */
+.sidebar.collapsed~.workspace{margin-left:82px}
+.chat-panel[data-side="left"],.chat-panel.left{left:24px;right:auto}
+[data-chat-side="left"] .chat-panel{left:24px;right:auto}
+@media(max-width:760px){.sidebar.collapsed~.workspace{margin-left:0}.chat-panel[data-side="left"],.chat-panel.left,[data-chat-side="left"] .chat-panel{left:12px;right:12px}}
