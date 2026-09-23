@@ -198,7 +198,6 @@ async function sendPasswordless(mode){
     const{error}=await supabase.auth.signInWithOtp({
       email,
       options:{
-        emailRedirectTo:CALLBACK_URL,
         shouldCreateUser:false
       }
     });
@@ -220,7 +219,13 @@ async function sendPasswordless(mode){
     passwordlessMethod="";
     button.disabled=false;
     other.disabled=false;
-    showMessage(readableAuthError(error,"Could not send the email OTP. Check that email authentication and your Supabase SMTP/email template are enabled."));
+    const status=error?.status||error?.code;
+    const detail=readableAuthError(error,"Could not send the email OTP.");
+    if(status===504){
+      showMessage("Supabase Auth timed out while sending the email. This is usually an SMTP/email-delivery configuration problem. Check your Supabase custom SMTP settings.");
+    }else{
+      showMessage(detail);
+    }
   }finally{
     button.textContent=mode==="otp"?"Send OTP code":"Send email link";
   }
