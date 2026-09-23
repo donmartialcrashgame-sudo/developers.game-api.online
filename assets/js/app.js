@@ -70,7 +70,8 @@
     limits:["Usage Limits","Quota and request controls"],
     "system-status":["System Status","Platform health and services"],
     support:["Support","Get help from Game API"],
-    help:["Help Center","Guides and answers"]
+    help:["Help Center","Guides and answers"],
+    login:["Sign in","Temporary developer console entry screen"]
   };
 
   function esc(v){
@@ -81,7 +82,30 @@
 
   function pageKey(){
     var p = location.pathname.split("/").pop().replace(/\.html$/,"");
-    return (!p || p === "index") ? "dashboard" : p;
+    return !p ? "login" : p === "index" ? "login" : p;
+  }
+
+  var SUPABASE_URL="https://qbagxeqquskkjksoraiz.supabase.co";
+  var SUPABASE_PUBLISHABLE_KEY="sb_publishable_chfRxHSFPSA1SZJtBajtKA_I7vs8R--";
+  var supabaseClientPromise=null;
+
+  function connectSupabase(){
+    if(supabaseClientPromise) return supabaseClientPromise;
+    supabaseClientPromise=import("https://esm.sh/@supabase/supabase-js@2.105.0")
+      .then(function(mod){
+        var client=mod.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+          auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+        });
+        window.gameApiSupabase=client;
+        document.documentElement.setAttribute("data-supabase","connected");
+        return client;
+      })
+      .catch(function(err){
+        document.documentElement.setAttribute("data-supabase","error");
+        console.warn("Game API Supabase connection failed:",err);
+        return null;
+      });
+    return supabaseClientPromise;
   }
 
   function getUser(){
@@ -208,6 +232,10 @@
     return '<a class="tool-item '+cls+'" href="'+href+'"><span class="tool-icon">'+icon+'</span><span><b>'+title+'</b><small>'+desc+'</small></span><i>↗</i></a>';
   }
 
+  function loginContent(){
+    return '<div class="login-page"><section class="login-card"><div class="login-logo"><span>G</span></div><span class="eyebrow">GAME API · DEVELOPER CONSOLE</span><h2>Welcome back</h2><p>Sign in access will be connected later. For now, this screen is only the temporary entry point for the developer console.</p><form class="login-form" onsubmit="return false"><label>Email address</label><input type="email" placeholder="you@example.com" autocomplete="email"><label>Password</label><input type="password" placeholder="Your password" autocomplete="current-password"><button class="primary-btn" type="button" id="temporary-login">Continue to dashboard <b>→</b></button></form><div class="login-note">Authentication setup is intentionally deferred.</div></section></div>';
+  }
+
   function logsContent(){
     return '<div class="logs-page">'
       + '<section class="glass-card logs-toolbar"><div class="logs-toolbar-main"><div><span class="card-kicker">API ACTIVITY</span><h3>Request logs</h3><p>Every recorded API call appears here. Click a request to inspect the actual response.</p></div><button class="primary-btn" id="logs-refresh">Refresh logs <b>↻</b></button></div><div class="logs-filters"><input id="logs-search" placeholder="Search endpoint, method, status or API key…"><select id="logs-method"><option value="">All methods</option><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>WS</option></select><select id="logs-status"><option value="">All status</option><option value="2">2xx Success</option><option value="4">4xx Client error</option><option value="5">5xx Server error</option></select></div></section>'
@@ -244,13 +272,33 @@
             '<div class="top-right"><button class="top-icon" title="Notifications">♢<i></i></button><div class="account"><button class="account-btn" id="account-btn"><span class="avatar">'+initial+'</span><span class="account-meta"><b>'+esc(name)+'</b><small>'+esc(email)+'</small></span><span class="account-chevron">⌄</span></button><div class="account-menu" id="account-menu"><div class="account-menu-head"><span class="avatar small">'+initial+'</span><div><b>'+esc(name)+'</b><small>'+esc(email)+'</small></div></div><a href="profile.html">○ My Profile <span>→</span></a><a href="subscription.html">▣ Subscription <span>→</span></a><button id="logout">↪ Sign out <span>→</span></button></div></div></div>'+
           '</header>'+
           '<div class="page-content"><div class="page-title-row"><div><span class="page-kicker">GAME API / '+esc(meta[0].toUpperCase())+'</span><h1>'+esc(meta[0])+'</h1><p>'+esc(meta[1])+'</p></div><div class="page-live"><i></i> Live platform</div></div>'+
-            (key==="dashboard"?dashboardContent():key==="logs"?logsContent():genericContent(key))+
+            (key==="dashboard"?dashboardContent():key==="logs"?logsContent():key==="login"?loginContent():genericContent(key))+
           '</div>'+
         '</main>'+
         '<div class="chat-panel" id="chat-panel" data-side="right"><div class="chat-head"><div><span class="chat-avatar">G</span><div><b>Game API Support</b><small><i></i> Usually replies quickly</small></div></div><button id="chat-close">×</button></div><div class="chat-body" id="chat-messages"><div class="bubble agent">Hello! Welcome to Game API support. How can we help you today?</div></div><form id="chat-form"><input id="chat-input" placeholder="Write a message…" autocomplete="off"><button>➤</button></form></div>'+
       '</div>';
 
     bind(key); saveChatSide(loadChatSide());
+    if(key==="dashboard"){
+      connectSupabase().then(async function(sb){
+        if(!sb) return;
+        try{
+          var result=await sb.auth.getSession();
+          if(result.data&&result.data.session){
+            var user=result.data.session.user||{};
+            var fresh={
+              name:(user.user_metadata&&((user.user_metadata.full_name)||(user.user_metadata.name)))||u.name||name,
+              email:user.email||email
+            };
+            localStorage.setItem("gameapi_user",JSON.stringify(fresh));
+          }
+        }catch(e){}
+      });
+    }
+    if(key==="login"){
+      var temp=document.getElementById("temporary-login");
+      if(temp) temp.onclick=function(){location.href="dashboard.html";};
+    }
   }
 
   function bind(key){
@@ -272,7 +320,7 @@
     document.getElementById("account-btn").onclick=function(){document.getElementById("account-menu").classList.toggle("open");};
     document.addEventListener("click",function(e){if(!e.target.closest(".account"))document.getElementById("account-menu").classList.remove("open");});
 
-    document.getElementById("logout").onclick=function(){localStorage.removeItem("gameapi_user");window.location.href="login.html";};
+    document.getElementById("logout").onclick=function(){localStorage.removeItem("gameapi_user");window.location.href="index.html";};
 
     document.getElementById("chat-open").onclick=function(){document.getElementById("chat-panel").classList.add("open");};
     document.getElementById("chat-close").onclick=function(){document.getElementById("chat-panel").classList.remove("open");};
