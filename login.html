@@ -16,7 +16,7 @@
 .available-later{margin-top:22px;padding-top:18px;border-top:1px solid #e8ecf2}.available-later-title{text-align:center;color:#94a3b8;font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}.provider-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.provider-btn{height:42px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;color:#94a3b8;display:flex;align-items:center;justify-content:center;gap:6px;font-size:8px;font-weight:800;cursor:not-allowed;position:relative}.provider-btn .social-icon{width:15px;height:15px}.provider-active{background:#fff;color:#334155;cursor:pointer}.provider-active:hover{background:#f1f5f9}.provider-active:after{display:none}.provider-btn:after{content:"Soon";position:absolute;right:5px;top:5px;padding:2px 4px;border-radius:999px;background:#e2e8f0;color:#64748b;font-size:6px;font-weight:900;letter-spacing:.04em}
 .facebook-disabled{opacity:.55!important;cursor:not-allowed!important;background:#f8fafc!important}.email-auth-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.facebook-mark{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:#e2e8f0;color:#64748b;font-size:13px;font-weight:900;font-family:Arial,sans-serif}.social-row{grid-template-columns:repeat(3,1fr)}@media(max-width:520px){.social-row{grid-template-columns:1fr}}
 </style>
-<script>window.loginCaptchaToken="";window.onLoginCaptchaVerified=function(token){window.loginCaptchaToken=token};window.onHCaptchaLoaded=function(){window.hcaptcha.render(document.getElementById("loginCaptcha"),{sitekey:"403e945c-c826-402e-a79e-e41e1d305eea",callback:"onLoginCaptchaVerified"})};</script><script src="https://js.hcaptcha.com/1/api.js?onload=onHCaptchaLoaded&render=explicit" async defer></script></head>
+<script>window.loginCaptchaToken="";window.onLoginCaptchaVerified=function(token){window.loginCaptchaToken=token};window.onHCaptchaLoaded=function(){window.hcaptcha.render(document.getElementById("loginCaptcha"),{sitekey:"8be02050-3f0e-4c4e-be70-c60081102f3a",callback:"onLoginCaptchaVerified"})};</script><script src="https://js.hcaptcha.com/1/api.js?onload=onHCaptchaLoaded&render=explicit" async defer></script></head>
 <body>
 <main class="auth-page">
 <section class="auth-visual"><div class="grid"></div><div class="visual-content">
@@ -45,7 +45,7 @@
 <form id="loginForm">
 <div class="auth-field"><label for="email">Email address</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com" required></div>
 <div class="auth-field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Enter your password" required></div>
-<div class="h-captcha" id="loginCaptcha" data-sitekey="403e945c-c826-402e-a79e-e41e1d305eea" data-callback="onLoginCaptchaVerified"></div><button class="email-btn" id="emailBtn" type="submit">Sign in to console</button>
+<div class="h-captcha" id="loginCaptcha" data-sitekey="8be02050-3f0e-4c4e-be70-c60081102f3a" data-callback="onLoginCaptchaVerified"></div><button class="email-btn" id="emailBtn" type="submit">Sign in to console</button>
 </form>
 <div class="passwordless" id="passwordlessBox">
   <div class="email-auth-actions">
@@ -76,7 +76,7 @@ const supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"implicit",experimental:{passkey:true}}
 });
 
-const HCAPTCHA_SITEKEY="403e945c-c826-402e-a79e-e41e1d305eea";let loginCaptchaToken=window.loginCaptchaToken||"";window.onLoginCaptchaVerified=token=>{loginCaptchaToken=token;};const $=id=>document.getElementById(id);
+const HCAPTCHA_SITEKEY="8be02050-3f0e-4c4e-be70-c60081102f3a";let loginCaptchaToken=window.loginCaptchaToken||"";window.onLoginCaptchaVerified=token=>{loginCaptchaToken=token;};const $=id=>document.getElementById(id);
 function showMessage(text,type="error"){
   $("message").textContent=text;
   $("message").className="auth-message show "+type;
