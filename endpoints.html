@@ -1,1 +1,183 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Game API production REST and WebSocket endpoints"><title>Game API • Endpoints</title><link rel="stylesheet" href="./assets/css/app.css?v=20260924.6"></head><body><div id="app"></div><script src="./assets/js/app.js?v=20260924.6"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Game API public endpoint reference — REST API, Crash Game endpoints, WebSocket realtime events, authentication, requests, responses and production integration.">
+<meta name="robots" content="index,follow">
+<title>Game API • Public Endpoints</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<style>
+:root{--bg:#061024;--bg2:#0d1b3a;--surface:#fff;--ink:#172033;--muted:#64748b;--line:#e5eaf1;--blue:#2563eb;--indigo:#4f46e5;--cyan:#22d3ee;--soft:#f6f8fc;--green:#059669;--orange:#d97706;--radius:22px;--shadow:0 24px 70px rgba(15,23,42,.10)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--soft);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.7}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.hero{background:radial-gradient(circle at 12% 10%,#2563eb66,transparent 28%),radial-gradient(circle at 88% 80%,#22d3ee55,transparent 30%),linear-gradient(135deg,#061024,#111d46);color:#fff;padding:28px 20px 90px}.nav{max-width:1180px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{font-weight:900;font-size:20px;letter-spacing:-.03em}.navlinks{display:flex;gap:18px;flex-wrap:wrap}.navlinks a{color:#dbeafe;font-size:13px}.hero-grid{max-width:1180px;margin:72px auto 0;display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center}.eyebrow{display:inline-flex;padding:7px 11px;border:1px solid #ffffff2c;border-radius:999px;background:#ffffff10;font-size:11px;font-weight:800;letter-spacing:.12em}.hero h1{font-size:clamp(42px,6vw,76px);line-height:1.02;margin:18px 0}.hero p{font-size:18px;color:#cbd5e1;max-width:720px}.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.btn{display:inline-flex;padding:12px 17px;border-radius:12px;font-weight:800}.btn-primary{background:#fff;color:#172033}.btn-soft{border:1px solid #ffffff38;color:#fff;background:#ffffff0d}.hero-art{background:#ffffff0d;border:1px solid #ffffff22;border-radius:26px;padding:14px;box-shadow:0 30px 90px #0005}.hero-art img{display:block;width:100%;height:auto;border-radius:17px;background:#fff}
+.wrap{max-width:1180px;margin:-42px auto 80px;padding:0 20px}.toc,.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.toc{padding:22px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}.toc b{margin-right:8px}.toc a{padding:8px 12px;background:#f1f5f9;border-radius:10px;font-size:13px;font-weight:700}.section{margin-top:32px}.section h2{font-size:32px;letter-spacing:-.03em;margin:0 0 8px}.section>p{color:var(--muted);max-width:850px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card{padding:26px}.endpoint{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}.method{font-size:12px;font-weight:900;padding:7px 9px;border-radius:9px;background:#dbeafe;color:#1d4ed8}.method.ws{background:#cffafe;color:#0e7490}.path{font-size:17px;font-weight:900;word-break:break-word}.desc{color:var(--muted);font-size:14px;margin-top:5px}.tag{display:inline-block;margin-top:10px;padding:5px 9px;border-radius:999px;background:#f1f5f9;font-size:11px;font-weight:800;color:#475569}.wide{grid-column:1/-1}.code{background:#071126;color:#dbeafe;border-radius:15px;padding:18px;overflow:auto;font-size:13px;line-height:1.7}.callout{border-left:4px solid var(--blue);background:#eff6ff;padding:18px 20px;border-radius:12px}.warning{border-left-color:var(--orange);background:#fff7ed}.ok{border-left-color:var(--green);background:#ecfdf5}.diagram{margin-top:18px;border:1px solid var(--line);border-radius:18px;padding:12px;background:#f8fafc}.diagram img{display:block;width:100%;height:auto;border-radius:12px}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:650px}.table th,.table td{text-align:left;padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:top}.table th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#64748b}.footer{max-width:1180px;margin:0 auto;padding:40px 20px 70px;color:#64748b;text-align:center}.footer strong{color:#172033}@media(max-width:850px){.hero-grid,.grid{grid-template-columns:1fr}.wide{grid-column:auto}.hero{padding-bottom:75px}.hero-grid{margin-top:48px}.navlinks{display:none}}@media(max-width:560px){.hero{padding-left:16px;padding-right:16px}.wrap{padding:0 12px}.hero h1{font-size:43px}.card{padding:20px}.endpoint{grid-template-columns:1fr}.method{width:max-content}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <nav class="nav">
+    <div class="brand">Game API</div>
+    <div class="navlinks">
+      <a href="#rest">REST API</a><a href="#crash">Crash Game</a><a href="#websocket">WebSocket</a><a href="documentation.html">Documentation</a><a href="how-to-use-gameapi.html">How to Use</a>
+    </div>
+  </nav>
+  <div class="hero-grid">
+    <div>
+      <span class="eyebrow">PUBLIC ENDPOINT REFERENCE</span>
+      <h1>Game API endpoints, clearly documented.</h1>
+      <p>Connect your web app, mobile app or backend to Game API using HTTPS REST endpoints and the realtime WebSocket service. This page gives developers the public endpoint map, request formats, response examples and connection flow.</p>
+      <div class="hero-actions"><a class="btn btn-primary" href="#rest">Explore endpoints →</a><a class="btn btn-soft" href="#websocket">Open WebSocket guide</a></div>
+    </div>
+    <div class="hero-art"><img src="assets/game-api-architecture.svg" alt="Game API architecture showing clients, API server, game engine and realtime services"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="toc"><b>On this page</b><a href="#overview">Overview</a><a href="#rest">REST</a><a href="#crash">Crash</a><a href="#websocket">WebSocket</a><a href="#auth">Authentication</a><a href="#examples">Examples</a><a href="#errors">Errors</a><a href="#production">Production</a></div>
+
+  <section class="section" id="overview">
+    <h2>1. Endpoint overview</h2>
+    <p>The production API host is <strong>api.game-api.online</strong>. REST requests use HTTPS. Realtime events use the WebSocket endpoint below.</p>
+    <div class="grid">
+      <div class="card"><div class="endpoint"><span class="method">HTTPS</span><div><div class="path">https://api.game-api.online</div><div class="desc">Primary production API host.</div></div></div></div>
+      <div class="card"><div class="endpoint"><span class="method ws">WSS</span><div><div class="path">wss://api.game-api.online/realtime</div><div class="desc">Production realtime WebSocket endpoint for live game events.</div></div></div></div>
+    </div>
+    <div class="diagram"><img src="assets/game-api-how-to-use.svg" alt="Game API integration flow from an application to the API server and realtime events"></div>
+  </section>
+
+  <section class="section" id="rest">
+    <h2>2. REST API endpoints</h2>
+    <p>REST endpoints are suitable when your application needs a request/response operation, such as fetching recent game rounds.</p>
+    <div class="grid">
+      <article class="card"><div class="endpoint"><span class="method">GET</span><div><div class="path">/</div><div class="desc">Returns basic service information, current service status, version and the realtime path.</div><span class="tag">Public service information</span></div></div></article>
+      <article class="card"><div class="endpoint"><span class="method">GET</span><div><div class="path">/health</div><div class="desc">Returns the backend health response and server timestamp.</div><span class="tag">Health check</span></div></div></article>
+      <article class="card"><div class="endpoint"><span class="method">POST</span><div><div class="path">/api/v1/crash/rounds</div><div class="desc">Fetch recent Crash Game rounds. Requires a valid Game API key.</div><span class="tag">Authenticated</span></div></div></article>
+      <article class="card"><div class="endpoint"><span class="method">POST</span><div><div class="path">/api/v1/big-odd/rounds</div><div class="desc">Fetch recent Big Odd rounds. Requires a valid Game API key.</div><span class="tag">Authenticated</span></div></div></article>
+      <article class="card"><div class="endpoint"><span class="method">GET</span><div><div class="path">/api/keys</div><div class="desc">Developer-console API-key management endpoint. Requires an authenticated developer session.</div><span class="tag">Developer account</span></div></div></article>
+      <article class="card"><div class="endpoint"><span class="method">GET</span><div><div class="path">/api/keys/usage</div><div class="desc">Returns usage information for the signed-in developer account.</div><span class="tag">Developer account</span></div></div></article>
+    </div>
+  </section>
+
+  <section class="section" id="crash">
+    <h2>3. Crash Game endpoint</h2>
+    <p>The Crash Game rounds endpoint returns recent round records. The server controls the live round lifecycle; clients consume the published state.</p>
+    <div class="card">
+      <h3>Request</h3>
+      <pre class="code">POST https://api.game-api.online/api/v1/crash/rounds
+Authorization: Bearer YOUR_GAME_API_KEY
+Content-Type: application/json
+
+{
+  "limit": 20
+}</pre>
+      <h3>Response shape</h3>
+      <pre class="code">{
+  "success": true,
+  "game": "crash",
+  "data": [
+    {
+      "id": "round-id",
+      "round_number": 125,
+      "status": "crash",
+      "multiplier": "3.47",
+      "started_at": "2026-09-24T08:00:00.000Z",
+      "crashed_at": "2026-09-24T08:00:07.000Z"
+    }
+  ],
+  "count": 1,
+  "plan": "free"
+}</pre>
+      <div class="callout ok"><strong>Read-only game flow:</strong> the live server owns the Crash Game lifecycle. A client connects and receives published state; it does not start or manually crash a round.</div>
+    </div>
+  </section>
+
+  <section class="section" id="websocket">
+    <h2>4. WebSocket realtime endpoint</h2>
+    <p>Use the production WebSocket URL to receive live Crash Game events without repeatedly polling the REST endpoint.</p>
+    <div class="card">
+      <div class="endpoint"><span class="method ws">WSS</span><div><div class="path">wss://api.game-api.online/realtime</div><div class="desc">Secure WebSocket connection for realtime Game API events.</div></div></div>
+      <h3>Connection flow</h3>
+      <ol><li>Open <code>wss://api.game-api.online/realtime</code>.</li><li>The server sends a <code>connected</code> message.</li><li>The Crash Game stream is available as <code>crash_rounds</code>.</li><li>If your integration requires API-key authentication, send an <code>auth</code> message with your API key.</li><li>Read <code>crash_status</code> updates as the server moves through betting, running and crash states.</li></ol>
+      <h3>Browser example</h3>
+      <pre class="code">const socket = new WebSocket("wss://api.game-api.online/realtime");
+
+socket.onopen = () =&gt; {
+  socket.send(JSON.stringify({
+    type: "auth",
+    apiKey: "YOUR_GAME_API_KEY"
+  }));
+};
+
+socket.onmessage = (event) =&gt; {
+  const message = JSON.parse(event.data);
+  console.log("Game API:", message);
+};</pre>
+      <h3>Typical live message</h3>
+      <pre class="code">{
+  "type": "crash_status",
+  "status": "running",
+  "round_number": 125,
+  "multiplier": "3.47",
+  "started_at": "2026-09-24T08:00:00.000Z"
+}</pre>
+    </div>
+  </section>
+
+  <section class="section" id="auth">
+    <h2>5. Authentication</h2>
+    <p>Game API uses API keys for protected game endpoints. Keep production secrets on a trusted backend and never expose a secret key in public client-side source code.</p>
+    <div class="grid">
+      <div class="card"><h3>API key header</h3><pre class="code">Authorization: Bearer YOUR_GAME_API_KEY</pre><p class="desc">Use the API key issued for your Game API account when calling protected game endpoints.</p></div>
+      <div class="card"><h3>WebSocket authentication</h3><pre class="code">{ "type": "auth", "apiKey": "YOUR_GAME_API_KEY" }</pre><p class="desc">Authenticate a WebSocket connection after it opens when authentication is required by the environment.</p></div>
+    </div>
+    <div class="callout warning"><strong>Security:</strong> do not place production API secrets inside frontend JavaScript, public GitHub repositories, screenshots or mobile-app bundles where they can be extracted.</div>
+  </section>
+
+  <section class="section" id="examples">
+    <h2>6. Integration examples</h2>
+    <div class="grid">
+      <div class="card"><h3>JavaScript REST request</h3><pre class="code">const response = await fetch(
+  "https://api.game-api.online/api/v1/crash/rounds",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer YOUR_GAME_API_KEY"
+    },
+    body: JSON.stringify({ limit: 20 })
+  }
+);
+
+const result = await response.json();
+console.log(result);</pre></div>
+      <div class="card"><h3>cURL</h3><pre class="code">curl -X POST   "https://api.game-api.online/api/v1/crash/rounds"   -H "Authorization: Bearer YOUR_GAME_API_KEY"   -H "Content-Type: application/json"   -d '{"limit":20}'</pre></div>
+    </div>
+  </section>
+
+  <section class="section" id="errors">
+    <h2>7. Errors and troubleshooting</h2>
+    <div class="card table-wrap">
+      <table class="table"><thead><tr><th>Situation</th><th>What to check</th></tr></thead><tbody>
+        <tr><td>Invalid API key</td><td>Confirm the key is active, has not been revoked or expired, and is being sent in the expected authentication field.</td></tr>
+        <tr><td>401 / unauthorized</td><td>Check the Authorization header and make sure the token belongs to the intended Game API account.</td></tr>
+        <tr><td>WebSocket auth_error</td><td>Check the API key and send the auth message only after the WebSocket connection opens.</td></tr>
+        <tr><td>Empty round data</td><td>Check the selected game, account plan and whether round records are currently available.</td></tr>
+        <tr><td>CORS in a browser</td><td>For production secret keys, use a backend proxy rather than exposing credentials directly to the browser.</td></tr>
+      </tbody></table>
+    </div>
+  </section>
+
+  <section class="section" id="production">
+    <h2>8. Production checklist</h2>
+    <div class="grid">
+      <div class="card"><h3>Before launch</h3><p>✓ Store secrets server-side<br>✓ Use HTTPS/WSS<br>✓ Handle reconnects<br>✓ Validate JSON responses<br>✓ Add request timeouts<br>✓ Monitor API usage</p></div>
+      <div class="card"><h3>Realtime clients</h3><p>✓ Listen for <code>connected</code><br>✓ Handle <code>auth_error</code><br>✓ Handle disconnects<br>✓ Reconnect safely<br>✓ Process <code>crash_status</code> events<br>✓ Do not attempt to control server-owned rounds</p></div>
+    </div>
+    <div class="callout"><strong>Next:</strong> read the <a href="documentation.html">full Game API documentation</a> or follow the <a href="how-to-use-gameapi.html">How to Use Game API</a> guide for a complete integration walkthrough.</div>
+  </section>
+</main>
+
+<footer class="footer"><strong>Game API</strong><br>Public endpoint reference for developers building integrations with the Game API platform.</footer>
+</body>
+</html>
