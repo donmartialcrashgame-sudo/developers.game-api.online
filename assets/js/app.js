@@ -1758,7 +1758,7 @@ socket.onmessage = event =&gt; {
       var allowed=await enforceAuthGate(key);
       if(!allowed)return;
       boot();
-      requestAnimationFrame(function(){setTimeout(function(){loader.classList.add("hide");setTimeout(function(){if(loader.parentNode)loader.remove();},420);},520);});
+      // Hide the global loader as soon as the dashboard shell is ready.\n      // Logs and other page data must not keep the workspace animation visible.\n      loader.classList.add("hide");\n      setTimeout(function(){if(loader.parentNode)loader.remove();},420);
     }catch(e){
       var a=document.getElementById("app");
       if(a)a.innerHTML='<div class="fatal"><div><h2>Game API could not load</h2><pre>'+esc(e.stack||e.message||e)+'</pre><button onclick="location.reload()">Reload workspace</button></div></div>';
