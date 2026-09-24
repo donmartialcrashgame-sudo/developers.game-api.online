@@ -1266,75 +1266,20 @@ socket.onmessage = event =&gt; {
   }
 
   function initWebsocketPage(){
-    var socket=null;
-    var keyInput=document.getElementById("ws-api-key");
-    var status=document.getElementById("ws-status");
-    var current=document.getElementById("ws-current-round");
-    var roundInput=document.getElementById("ws-round-number");
-    var roundResult=document.getElementById("ws-round-result");
-    var log=document.getElementById("ws-log");
-    function writeLog(value){
-      if(!log)return;
-      var line=document.createElement("div");
-      line.textContent=new Date().toLocaleTimeString()+"  "+(typeof value==="string"?value:JSON.stringify(value));
-      log.prepend(line);
-    }
-    function setStatus(text,live){
-      if(status){status.className="ws-status"+(live?" live":"");status.querySelector("span").textContent=text;}
-    }
-    function renderCurrent(m){
-      if(!current)return;
-      current.innerHTML='<div class="round-big">#'+esc(m.round_number||"—")+'</div><div class="round-meta"><div><span>Status</span><b>'+esc(m.status||"—")+'</b></div><div><span>Multiplier</span><b>'+esc(m.multiplier||"—")+'</b></div><div><span>Updated</span><b>'+esc(new Date().toLocaleTimeString())+'</b></div></div>';
-    }
-    function connect(){
-      var apiKey=String(keyInput&&keyInput.value||"").trim();
-      if(!apiKey){alert("Enter your Game API key first.");return;}
-      if(socket){try{socket.close();}catch(e){}}
-      setStatus("Connecting…",false); writeLog("Opening WebSocket…");
-      socket=new WebSocket("wss://api.game-api.online/realtime");
-      socket.onopen=function(){
-        setStatus("Connected — authenticating",true); writeLog({type:"open"});
-        socket.send(JSON.stringify({type:"auth",apiKey:apiKey}));
-      };
-      socket.onmessage=function(event){
-        var message;
-        try{message=JSON.parse(event.data);}catch(e){writeLog(event.data);return;}
-        writeLog(message);
-        if(message.type==="crash_status" || message.round_number!=null){
-          renderCurrent(message);
-        }
-        if(message.type==="auth_error") setStatus("Authentication error",false);
-      };
-      socket.onerror=function(){setStatus("WebSocket error",false);writeLog("WebSocket error");};
-      socket.onclose=function(){setStatus("Disconnected",false);writeLog("Connection closed");socket=null;};
-    }
-    function disconnect(){if(socket){socket.close();socket=null;}setStatus("Disconnected",false);}
-    async function getRound(){
-      var apiKey=String(keyInput&&keyInput.value||"").trim(), n=Number(roundInput&&roundInput.value);
-      if(!apiKey){alert("Enter your Game API key first.");return;}
-      if(!n){alert("Enter a round number.");return;}
-      roundResult.innerHTML='<div class="round-big">Loading…</div><div class="round-meta"><div><span>Status</span><b>Fetching</b></div><div><span>Round</span><b>#'+esc(n)+'</b></div><div><span>Source</span><b>REST API</b></div></div>';
-      try{
-        var response=await fetch("https://api.game-api.online/api/v1/crash/rounds",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},body:JSON.stringify({limit:100})});
-        var data=await response.json().catch(function(){return{};});
-        if(!response.ok) throw new Error(data.error||data.message||("HTTP "+response.status));
-        var rows=Array.isArray(data.data)?data.data:[];
-        var found=rows.find(function(r){return Number(r.round_number)===n;});
-        if(!found) throw new Error("Round #"+n+" was not included in the latest "+rows.length+" returned rounds.");
-        roundResult.innerHTML='<div class="round-big">#'+esc(found.round_number)+'</div><div class="round-meta"><div><span>Status</span><b>'+esc(found.status||"—")+'</b></div><div><span>Multiplier</span><b>'+esc(found.multiplier||"—")+'</b></div><div><span>Crash time</span><b>'+esc(found.crashed_at||found.ended_at||"—")+'</b></div></div>';
-        writeLog({type:"round_lookup",round_number:n,success:true});
-      }catch(e){
-        roundResult.innerHTML='<div class="round-big">Not found</div><div class="round-meta"><div><span>Result</span><b>'+esc(e.message||"Request failed")+'</b></div><div><span>Round</span><b>#'+esc(n)+'</b></div><div><span>Source</span><b>REST API</b></div></div>';
-        writeLog({type:"round_lookup",success:false,error:e.message});
-      }
-    }
-    var connectBtn=document.getElementById("ws-connect"), disconnectBtn=document.getElementById("ws-disconnect"), getBtn=document.getElementById("ws-get-round");
-    if(connectBtn)connectBtn.onclick=connect;
-    if(disconnectBtn)disconnectBtn.onclick=disconnect;
-    if(getBtn)getBtn.onclick=getRound;
+    var socket=null,keyInput=document.getElementById("ws-api-key"),status=document.getElementById("ws-status"),current=document.getElementById("ws-current-round"),roundInput=document.getElementById("ws-round-number"),roundResult=document.getElementById("ws-round-result"),log=document.getElementById("ws-log");
+    function writeLog(value){if(!log)return;var empty=log.querySelector(".ws-empty");if(empty)empty.remove();var line=document.createElement("div");line.className="ws-log-line";line.innerHTML='<time>'+esc(new Date().toLocaleTimeString())+'</time><code>'+esc(typeof value==="string"?value:JSON.stringify(value))+'</code>';log.prepend(line);}
+    function setStatus(text,live){if(status){status.className="ws-status"+(live?" live":"");var label=status.querySelector("span");if(label)label.textContent=text;}}
+    function renderRound(host,m,source){if(!host)return;var state=String(m.status||"—").toLowerCase();host.innerHTML='<div class="ws-round-top"><div class="ws-round-number">#'+esc(m.round_number||"—")+'</div><span class="ws-state '+esc(state)+'">'+esc(state.toUpperCase())+'</span></div><div class="ws-round-metrics"><div><span>Multiplier</span><b>'+esc(m.multiplier||"—")+'</b></div><div><span>Status</span><b>'+esc(m.status||"—")+'</b></div><div><span>Source</span><b>'+esc(source||"WebSocket")+'</b></div></div><div class="ws-round-time"><span>Updated</span><b>'+esc(m.crashed_at||m.ended_at||new Date().toLocaleTimeString())+'</b></div>';}
+    function connect(){var apiKey=String(keyInput&&keyInput.value||"").trim();if(!apiKey){notify("error","API key required","Enter an active Game API key before connecting.");if(keyInput)keyInput.focus();return;}if(socket){try{socket.close();}catch(e){}}setStatus("Connecting…",false);writeLog("Opening wss://api.game-api.online/realtime");socket=new WebSocket("wss://api.game-api.online/realtime");socket.onopen=function(){setStatus("Authenticating…",true);writeLog({type:"open"});socket.send(JSON.stringify({type:"auth",apiKey:apiKey}));};socket.onmessage=function(event){var message;try{message=JSON.parse(event.data);}catch(e){writeLog(event.data);return;}writeLog(message);if(message.type==="connected"&&message.authenticated===false){setStatus("Connected — waiting for auth",true);return;}if(message.type==="auth_success"||message.authenticated===true)setStatus("Connected",true);if(message.type==="auth_error"){setStatus("Authentication error",false);notify("error","Authentication failed",message.message||"The API key was rejected.");}if(message.type==="crash_status"||message.round_number!=null)renderRound(current,message,"WebSocket");};socket.onerror=function(){setStatus("WebSocket error",false);writeLog("WebSocket error");};socket.onclose=function(){setStatus("Disconnected",false);writeLog("Connection closed");socket=null;};}
+    function disconnect(){if(socket){try{socket.close();}catch(e){}socket=null;}setStatus("Disconnected",false);writeLog("Disconnected by user");}
+    async function getRound(){var apiKey=String(keyInput&&keyInput.value||"").trim(),n=Number(roundInput&&roundInput.value);if(!apiKey){notify("error","API key required","Enter your API key before looking up a round.");return;}if(!n){notify("error","Round number required","Enter a valid round number.");return;}roundResult.innerHTML='<div class="ws-loading">Fetching round #'+esc(n)+'…</div>';try{var response=await fetch("https://api.game-api.online/api/v1/crash/rounds",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},body:JSON.stringify({limit:100})});var data=await response.json().catch(function(){return{};});if(!response.ok)throw new Error(data.error||data.message||("HTTP "+response.status));var rows=Array.isArray(data.data)?data.data:[],found=rows.find(function(r){return Number(r.round_number)===n;});if(!found)throw new Error("Round #"+n+" was not included in the latest "+rows.length+" returned rounds.");renderRound(roundResult,found,"REST API");writeLog({type:"round_lookup",round_number:n,success:true});}catch(e){roundResult.innerHTML='<div class="ws-empty error"><b>Round not found</b><span>'+esc(e.message||"Request failed")+'</span></div>';writeLog({type:"round_lookup",round_number:n,success:false,error:e.message});}}
+    var connectBtn=document.getElementById("ws-connect"),disconnectBtn=document.getElementById("ws-disconnect"),getBtn=document.getElementById("ws-get-round");if(connectBtn)connectBtn.onclick=connect;if(disconnectBtn)disconnectBtn.onclick=disconnect;if(getBtn)getBtn.onclick=getRound;
+    var clear=document.getElementById("ws-clear-log");if(clear)clear.onclick=function(){log.innerHTML='<div class="ws-empty"><b>No events yet</b><span>Connect to the WebSocket to start receiving events.</span></div>';};
+    var copy=document.getElementById("ws-copy-endpoint");if(copy)copy.onclick=function(){if(navigator.clipboard)navigator.clipboard.writeText("wss://api.game-api.online/realtime").then(function(){notify("success","Copied","WebSocket endpoint copied to clipboard.");}).catch(function(){});};
   }
 
   function genericContent(key){
+    if(key==="websocket") return websocketContent();
     if(key==="overview") return overviewContent();
     if(key==="usage") return usageContent();
     if(key==="keys") return apiKeysContent();
