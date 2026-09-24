@@ -135,66 +135,154 @@
   function initLogs(){
     var body=document.getElementById("logs-body"),search=document.getElementById("logs-search"),method=document.getElementById("logs-method"),status=document.getElementById("logs-status");
     var detail=document.getElementById("log-detail-backdrop"),detailContent=document.getElementById("log-detail-content"),detailTitle=document.getElementById("log-detail-title"),refresh=document.getElementById("logs-refresh");
-    var logs=[],timer=null,busy=false,ws=null;
+    var logs=[],timer=null,busy=false;
+
     function escJson(v){try{return JSON.stringify(v,null,2)}catch(e){return String(v)}}
-    function normalize(row,i){
-      var code=Number(row.status||row.status_code||row.http_status||row.response_status||0);
-      return {id:String(row.id||row.request_id||("live-"+i+"-"+Date.now())),time:row.time||row.created_at||row.timestamp||new Date().toISOString(),method:String(row.method||row.http_method||"GET").toUpperCase(),endpoint:row.endpoint||row.path||row.url||"/",status:code||row.status||"—",responseTime:row.response_time||row.duration||row.latency||"—",key:row.key_prefix||row.api_key_prefix||row.api_key||"—",request:row.request||{headers:row.request_headers||{}},body:row.body||row.request_body||null,response:row.response||row.response_body||row.data||row.result||null};
+
+    function hasKeyData(row){
+      return !!(row && (
+        row.api_key_id || row.key_id || row.api_key_prefix || row.key_prefix ||
+        row.api_key_name || row.key_name || row.key || row.apiKey ||
+        row.api_key
+      ));
     }
-    function formatTime(v){var d=new Date(v);return isNaN(d.getTime())?String(v):d.toLocaleTimeString();}
+
+    function normalize(row,i){
+      var code=Number(row.status_code||row.status||row.http_status||row.response_status||0);
+      var keyPrefix=row.key_prefix||row.api_key_prefix||row.api_key||row.key||row.apiKey||"—";
+      var keyName=row.key_name||row.api_key_name||row.apiKeyName||row.name||"";
+      return {
+        id:String(row.id||row.request_id||row.log_id||("key-log-"+i+"-"+Date.now())),
+        time:row.created_at||row.timestamp||row.time||row.requested_at||new Date().toISOString(),
+        method:String(row.method||row.http_method||"GET").toUpperCase(),
+        endpoint:row.endpoint||row.path||row.url||row.route||"/",
+        status:code||"—",
+        responseTime:row.response_time||row.duration||row.latency||row.response_ms||"—",
+        key:keyPrefix,
+        keyName:keyName,
+        keyId:row.api_key_id||row.key_id||"",
+        request:row.request||{headers:row.request_headers||{}},
+        body:row.body||row.request_body||null,
+        response:row.response||row.response_body||row.result||row.data||null
+      };
+    }
+
+    function formatTime(v){
+      var d=new Date(v);
+      return isNaN(d.getTime())?String(v):d.toLocaleString();
+    }
+
     function render(){
       var q=(search.value||"").toLowerCase(),m=method.value,st=status.value;
-      var filtered=logs.filter(function(x){return (!m||x.method===m)&&(!st||String(x.status).charAt(0)===st)&&(!q||(x.endpoint+" "+x.method+" "+x.status+" "+x.key).toLowerCase().indexOf(q)>-1);});
-      if(!filtered.length){body.innerHTML='<tr><td colspan="7"><div class="logs-empty"><b>No live requests found</b><span>Requests will appear here when the API receives activity.</span></div></td></tr>';return;}
-      body.innerHTML=filtered.map(function(x){var ok=Number(x.status)<400||Number(x.status)===101;return '<tr class="log-row" data-id="'+esc(x.id)+'"><td class="log-time">'+esc(formatTime(x.time))+'</td><td><span class="method '+(ok?"green":"pink")+'">'+esc(x.method)+'</span></td><td><b class="log-endpoint">'+esc(x.endpoint)+'</b></td><td><span class="log-status '+(ok?"ok":"error")+'">'+esc(x.status)+'</span></td><td>'+esc(x.responseTime)+'</td><td><code>'+esc(x.key)+'</code></td><td><span class="row-arrow">›</span></td></tr>';}).join("");
-      body.querySelectorAll(".log-row").forEach(function(row){row.onclick=function(){var x=logs.find(function(a){return a.id===row.dataset.id});if(!x)return;detailTitle.textContent=x.method+" "+x.endpoint;detailContent.innerHTML='<div class="detail-grid"><div><span>STATUS</span><b>'+esc(x.status)+'</b></div><div><span>RESPONSE TIME</span><b>'+esc(x.responseTime)+'</b></div><div><span>API KEY</span><b>'+esc(x.key)+'</b></div><div><span>TIME</span><b>'+esc(formatTime(x.time))+'</b></div></div><div class="detail-section"><span>REQUEST HEADERS</span><pre>'+esc(escJson(x.request&&x.request.headers||{}))+'</pre></div><div class="detail-section"><span>REQUEST BODY</span><pre>'+esc(escJson(x.body))+'</pre></div><div class="detail-section response-block"><span>ACTUAL RESPONSE</span><pre>'+esc(escJson(x.response))+'</pre></div>';detail.classList.add("open");};});
+      var filtered=logs.filter(function(x){
+        return (!m||x.method===m)&&
+          (!st||String(x.status).charAt(0)===st)&&
+          (!q||(x.endpoint+" "+x.method+" "+x.status+" "+x.key+" "+x.keyName+" "+x.keyId).toLowerCase().indexOf(q)>-1);
+      });
+
+      if(!filtered.length){
+        body.innerHTML='<tr><td colspan="7"><div class="logs-empty"><b>No API-key activity found</b><span>Requests authenticated with your API keys will appear here.</span></div></td></tr>';
+        return;
+      }
+
+      body.innerHTML=filtered.map(function(x){
+        var ok=Number(x.status)<400||Number(x.status)===101;
+        var keyLabel=x.keyName?(x.keyName+" · "+x.key):x.key;
+        return '<tr class="log-row" data-id="'+esc(x.id)+'">'+
+          '<td class="log-time">'+esc(formatTime(x.time))+'</td>'+
+          '<td><span class="method '+(ok?"green":"pink")+'">'+esc(x.method)+'</span></td>'+
+          '<td><b class="log-endpoint">'+esc(x.endpoint)+'</b></td>'+
+          '<td><span class="log-status '+(ok?"ok":"error")+'">'+esc(x.status)+'</span></td>'+
+          '<td>'+esc(x.responseTime)+'</td>'+
+          '<td><code title="'+esc(x.keyId)+'">'+esc(keyLabel)+'</code></td>'+
+          '<td><span class="row-arrow">›</span></td>'+
+        '</tr>';
+      }).join("");
+
+      body.querySelectorAll(".log-row").forEach(function(row){
+        row.onclick=function(){
+          var x=logs.find(function(a){return a.id===row.dataset.id});
+          if(!x)return;
+          detailTitle.textContent=(x.keyName?x.keyName+" · ":"")+"API request";
+          detailContent.innerHTML=
+            '<div class="detail-grid">'+
+              '<div><span>API KEY</span><b>'+esc(x.keyName||x.key)+'</b></div>'+
+              '<div><span>KEY PREFIX</span><b>'+esc(x.key)+'</b></div>'+
+              '<div><span>STATUS</span><b>'+esc(x.status)+'</b></div>'+
+              '<div><span>RESPONSE TIME</span><b>'+esc(x.responseTime)+'</b></div>'+
+              '<div><span>TIME</span><b>'+esc(formatTime(x.time))+'</b></div>'+
+              '<div><span>KEY ID</span><b>'+esc(x.keyId||"—")+'</b></div>'+
+            '</div>'+
+            '<div class="detail-section"><span>ENDPOINT</span><pre>'+esc(x.method+" "+x.endpoint)+'</pre></div>'+
+            '<div class="detail-section"><span>REQUEST HEADERS</span><pre>'+esc(escJson(x.request&&x.request.headers||{}))+'</pre></div>'+
+            '<div class="detail-section"><span>REQUEST BODY</span><pre>'+esc(escJson(x.body))+'</pre></div>'+
+            '<div class="detail-section response-block"><span>ACTUAL RESPONSE</span><pre>'+esc(escJson(x.response))+'</pre></div>';
+          detail.classList.add("open");
+        };
+      });
     }
-    async function getSession(){var sb=await connectSupabase();if(!sb)return null;var r=await sb.auth.getSession();return r.data&&r.data.session?r.data.session:null;}
+
+    async function getSession(){
+      var sb=await connectSupabase();
+      if(!sb)return null;
+      var r=await sb.auth.getSession();
+      return r.data&&r.data.session?r.data.session:null;
+    }
+
     async function load(){
-      if(busy)return;busy=true;
-      if(!logs.length)body.innerHTML='<tr><td colspan="7"><div class="logs-empty"><b>Loading live logs…</b><span>Reading your authenticated API activity.</span></div></td></tr>';
+      if(busy)return;
+      busy=true;
+      if(!logs.length)body.innerHTML='<tr><td colspan="7"><div class="logs-empty"><b>Loading API-key activity…</b><span>Reading authenticated request logs.</span></div></td></tr>';
       try{
         var session=await getSession();
         if(!session){busy=false;return;}
         var headers={"Accept":"application/json","Authorization":"Bearer "+session.access_token};
         var endpoints=["https://api.game-api.online/api/v1/logs","https://api.game-api.online/api/logs"];
         var payload=null;
+
         for(var i=0;i<endpoints.length;i++){
-          try{var r=await fetch(endpoints[i],{method:"GET",headers:headers,cache:"no-store"});if(!r.ok)continue;var data=await r.json();payload=Array.isArray(data)?data:(data.logs||data.data||data.requests||[]);if(Array.isArray(payload))break;}catch(e){}
+          try{
+            var response=await fetch(endpoints[i],{method:"GET",headers:headers,cache:"no-store"});
+            if(!response.ok)continue;
+            var data=await response.json();
+            var candidate=Array.isArray(data)?data:(data.logs||data.requests||data.activity||data.data||[]);
+            if(Array.isArray(candidate)){
+              payload=candidate;
+              break;
+            }
+          }catch(e){}
         }
+
         if(payload===null)throw new Error("Live log endpoint unavailable");
-        logs=payload.map(normalize).slice(0,200);
+
+        // Never display crash-round/game-state records on this page.
+        logs=payload.filter(hasKeyData).map(normalize).slice(0,200);
         render();
       }catch(e){
-        if(!logs.length)body.innerHTML='<tr><td colspan="7"><div class="logs-empty error"><b>Live logs unavailable</b><span>The production API did not return a live log stream yet.</span></div></td></tr>';
+        if(!logs.length){
+          body.innerHTML='<tr><td colspan="7"><div class="logs-empty error"><b>API-key logs unavailable</b><span>The production API did not return authenticated key activity yet.</span></div></td></tr>';
+        }
       }finally{busy=false;}
     }
+
     function start(){
       if(timer)clearInterval(timer);
       load();
       timer=setInterval(load,5000);
     }
-    search.oninput=render;method.onchange=render;status.onchange=render;
+
+    search.oninput=render;
+    method.onchange=render;
+    status.onchange=render;
     refresh.onclick=function(){load();};
     document.getElementById("log-detail-close").onclick=function(){detail.classList.remove("open");};
     detail.onclick=function(e){if(e.target===detail)detail.classList.remove("open");};
+
     start();
-    getSession().then(function(session){
-      if(!session)return;
-      try{
-        ws=new WebSocket("wss://api.game-api.online/realtime");
-        ws.onopen=function(){ws.send(JSON.stringify({type:"auth",apiKey:session.access_token}));};
-        ws.onmessage=function(event){
-          try{
-            var msg=JSON.parse(event.data);
-            if(msg.type==="crash_status"||msg.type==="api_log"||msg.type==="request_log"){
-              logs.unshift(normalize(msg,0));logs=logs.slice(0,200);render();
-            }
-          }catch(e){}
-        };
-      }catch(e){}
+
+    window.addEventListener("beforeunload",function(){
+      if(timer)clearInterval(timer);
     });
-    window.addEventListener("beforeunload",function(){if(timer)clearInterval(timer);if(ws){try{ws.close();}catch(e){}}});
   }
 
   function saveChatSide(side){
