@@ -12,7 +12,7 @@
       ["API Keys","api-keys.html","⌘","keys"],
       ["Documentation","private-documentation.html","▤","private-documentation"],
       ["How to Use Game API","private-how-to-use-gameapi.html","?","private-how-to-use-gameapi"],
-      ["Endpoints","endpoints.html","↗","endpoints"],
+      ["Endpoints","private-endpoints.html","↗","private-endpoints"],
       ["WebSocket","websocket.html","⌁","websocket"],
       ["Logs","logs.html","☷","logs"],
       ["API Status","status.html","●","status"]
@@ -54,6 +54,7 @@
     "private-documentation":["Private Documentation","Authenticated integration reference for your developer workspace"],
     "how-to-use-gameapi":["How to Use Game API","Public step-by-step guide to connect and make your first request"],
     "private-how-to-use-gameapi":["Private How to Use Game API","Authenticated step-by-step integration guide for your developer workspace"],
+      "private-endpoints":["Private Endpoints","Authenticated endpoint reference for your developer workspace"],
     endpoints:["Endpoints","Explore available API resources"],
     websocket:["WebSocket","Real-time connection and event tools"],
     logs:["Logs","Inspect every API request and its response"],
@@ -943,6 +944,94 @@ if (!response.ok) throw new Error(data.message || "Request failed");</code></pre
         '</article></section></div>';
   }
 
+  function privateEndpointsContent(){
+    return `<style>
+      .private-endpoints{display:grid;gap:18px}
+      .private-endpoints .pe-hero{padding:30px}
+      .private-endpoints h2{margin:7px 0 10px;font-size:30px;letter-spacing:-.04em}
+      .private-endpoints h3{margin:0 0 8px;font-size:17px}
+      .private-endpoints p,.private-endpoints li{color:#64748b;font-size:11px;line-height:1.8}
+      .private-endpoints .pe-bases,.private-endpoints .pe-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+      .private-endpoints .pe-box{padding:20px}
+      .private-endpoints .pe-base{padding:15px;border:1px solid #e5eaf1;border-radius:13px;background:#f8fafc}
+      .private-endpoints .pe-base small{display:block;color:#64748b;font-size:9px;font-weight:800;letter-spacing:.1em;margin-bottom:7px}
+      .private-endpoints code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+      .private-endpoints .pe-base code{font-size:12px;word-break:break-all}
+      .private-endpoints .pe-row{display:grid;grid-template-columns:65px 1fr;gap:10px;padding:11px;border:1px solid #e5eaf1;border-radius:10px;margin-top:8px}
+      .private-endpoints .method{font-size:9px;font-weight:900;text-align:center;padding:6px;border-radius:7px;background:#dbeafe;color:#1d4ed8;height:max-content}
+      .private-endpoints .ws{background:#cffafe;color:#0e7490}
+      .private-endpoints .path{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;word-break:break-all}
+      .private-endpoints .note{padding:15px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe}
+      .private-endpoints .note b{display:block;color:#1d4ed8;margin-bottom:5px}
+      .private-endpoints pre{background:#071126;color:#dbeafe;padding:15px;border-radius:12px;overflow:auto;font-size:10px;line-height:1.7}
+      .private-endpoints .art{border:1px solid #e5eaf1;border-radius:16px;overflow:hidden;background:#f8fafc}
+      .private-endpoints .art img{display:block;width:100%;height:auto}
+      @media(max-width:850px){.private-endpoints .pe-bases,.private-endpoints .pe-grid{grid-template-columns:1fr}}
+    </style>
+    <div class="private-endpoints">
+      <section class="glass-card pe-hero">
+        <span class="card-kicker">PRIVATE DEVELOPER ENDPOINTS</span>
+        <h2>Game API endpoint reference</h2>
+        <p>Use this authenticated reference while integrating your Game API account. It covers the production REST base URL, Crash Game and Big Odd endpoints, API-key operations, subscription routes and the live WebSocket service.</p>
+        <div class="pe-bases">
+          <div class="pe-base"><small>REST BASE URL</small><code>https://api.game-api.online</code></div>
+          <div class="pe-base"><small>WEBSOCKET</small><code>wss://api.game-api.online/realtime</code></div>
+        </div>
+      </section>
+      <section class="glass-card pe-box art"><img src="assets/game-api-architecture.svg" alt="Game API architecture"></section>
+      <section class="pe-grid">
+        <article class="glass-card pe-box"><h3>System</h3><p>Public service endpoints.</p><div class="pe-row"><span class="method">GET</span><div><div class="path">/</div><small>Service information</small></div></div><div class="pe-row"><span class="method">GET</span><div><div class="path">/health</div><small>Health check</small></div></div></article>
+        <article class="glass-card pe-box"><h3>Game data</h3><p>Protected game-data resources.</p><div class="pe-row"><span class="method">POST</span><div><div class="path">/api/v1/crash/rounds</div><small>API key · JSON body: { "limit": 20 }</small></div></div><div class="pe-row"><span class="method">POST</span><div><div class="path">/api/v1/big-odd/rounds</div><small>API key · JSON body: { "limit": 20 }</small></div></div></article>
+        <article class="glass-card pe-box"><h3>API keys</h3><p>Developer account operations.</p><div class="pe-row"><span class="method">GET</span><div><div class="path">/api/keys</div><small>List keys</small></div></div><div class="pe-row"><span class="method">POST</span><div><div class="path">/api/keys</div><small>Create key</small></div></div><div class="pe-row"><span class="method">GET</span><div><div class="path">/api/keys/:id/secret</div><small>Recover encrypted secret</small></div></div><div class="pe-row"><span class="method">POST</span><div><div class="path">/api/keys/:id/revoke</div><small>Revoke key</small></div></div></article>
+        <article class="glass-card pe-box"><h3>Account services</h3><p>Authenticated subscription and messaging operations.</p><div class="pe-row"><span class="method">GET</span><div><div class="path">/api/payments/subscription</div><small>Current subscription</small></div></div><div class="pe-row"><span class="method">POST</span><div><div class="path">/api/payments/cancel</div><small>Cancel subscription</small></div></div><div class="pe-row"><span class="method">POST</span><div><div class="path">/api/mail/contact</div><small>Routed account message</small></div></div></article>
+      </section>
+      <section class="glass-card pe-box">
+        <span class="card-kicker">CRASH GAME</span><h3>Authenticated request</h3>
+        <pre>POST https://api.game-api.online/api/v1/crash/rounds
+Authorization: Bearer YOUR_GAME_API_KEY
+Content-Type: application/json
+
+{"limit":20}</pre>
+        <pre>{
+  "success": true,
+  "game": "crash",
+  "data": [
+    {
+      "round_number": 125,
+      "status": "crash",
+      "multiplier": "3.47",
+      "started_at": "2026-09-24T08:00:00.000Z",
+      "crashed_at": "2026-09-24T08:00:07.000Z"
+    }
+  ],
+  "count": 1
+}</pre>
+      </section>
+      <section class="glass-card pe-box">
+        <span class="card-kicker">WEBSOCKET / REALTIME</span><h3>wss://api.game-api.online/realtime</h3>
+        <p>Connect to the production realtime service. The server owns the live Crash Game lifecycle; clients consume published events.</p>
+        <pre>const socket = new WebSocket("wss://api.game-api.online/realtime");
+
+socket.onopen = () => {
+  socket.send(JSON.stringify({
+    type: "auth",
+    apiKey: "YOUR_GAME_API_KEY"
+  }));
+};
+
+socket.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  console.log(message);
+};</pre>
+        <div class="note"><b>Realtime channels</b><span>crash_rounds and big_odd_rounds are supported subscription channels. Crash status messages can report betting, running and crash states.</span></div>
+      </section>
+      <section class="glass-card pe-box">
+        <span class="card-kicker">SECURITY</span><h3>Production rules</h3>
+        <ul><li>Keep production API secrets on a trusted backend.</li><li>Use HTTPS and WSS in production.</li><li>Handle WebSocket reconnects and auth errors.</li><li>Do not expose private API secrets in public source repositories.</li><li>Use the public <a href="endpoints.html">Endpoints reference</a> when you need a shareable, indexable page.</li></ul>
+      </section>
+    </div>`;
+  }
+
   function endpointsContent(){
     return `
       <style>
@@ -1099,6 +1188,7 @@ socket.onmessage = (event) =&gt; {
     if(key==="private-documentation") return privateDocumentationContent();
     if(key==="how-to-use-gameapi") return howToUseContent();
     if(key==="private-how-to-use-gameapi") return privateHowToUseContent();
+    if(key==="private-endpoints") return privateEndpointsContent();
     if(key==="endpoints") return endpointsContent();
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
