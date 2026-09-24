@@ -1099,6 +1099,7 @@ socket.onmessage = (event) =&gt; {
     if(key==="private-documentation") return privateDocumentationContent();
     if(key==="how-to-use-gameapi") return howToUseContent();
     if(key==="private-how-to-use-gameapi") return privateHowToUseContent();
+    if(key==="endpoints") return endpointsContent();
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
       '<section class="module-layout"><div class="glass-card module-main"><div class="card-head"><div><span class="card-kicker">CONNECTED</span><h3>'+esc(m[0])+' workspace</h3><p>This page uses the authenticated developer console shell.</p></div><span class="health-badge"><i></i> Authenticated</span></div><div class="module-actions"><button id="module-test" class="primary-btn">Run module check <b>→</b></button><a href="how-to-use-gameapi.html" class="secondary-btn">How to use Game API</a></div><div class="module-status"><div><span>Environment</span><b>Production</b></div><div><span>Access</span><b>Authenticated</b></div><div><span>Interface</span><b>Responsive</b></div></div></div>'+
