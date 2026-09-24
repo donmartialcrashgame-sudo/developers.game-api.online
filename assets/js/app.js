@@ -1190,7 +1190,7 @@ socket.onmessage = (event) =&gt; {
         .ws-form{display:grid;gap:10px}.ws-form label{font-size:10px;color:#7e8ca7;font-weight:800;letter-spacing:.08em}.ws-form input{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #2a3854;background:#070c16;color:#e8efff;outline:none}
         .ws-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:4px}.ws-actions button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer}.ws-primary{background:#2563eb;color:#fff}.ws-secondary{background:#18243a;color:#dce7ff}
         .ws-status{display:flex;align-items:center;gap:8px;color:#91a0ba;font-size:11px;margin-top:8px}.ws-status i{width:8px;height:8px;border-radius:50%;background:#64748b}.ws-status.live i{background:#22c55e;box-shadow:0 0 12px #22c55e}
-        .round-box{min-height:150px;padding:18px;border-radius:15px;background:#070c16;border:1px solid #24304a}.round-big{font-size:34px;font-weight:900;letter-spacing:-.04em}.round-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.round-meta div{padding:10px;border:1px solid #24304a;border-radius:10px}.round-meta span{display:block;color:#75839d;font-size:9px;text-transform:uppercase}.round-meta b{display:block;margin-top:4px;color:#e8efff;font-size:12px}
+        .round-box{min-height:150px;padding:18px;border-radius:15px;background:#070c16;border:1px solid #24304a}.round-big{font-size:34px;font-weight:900;letter-spacing:-.04em}.round-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.round-meta div{padding:10px;border:1px solid #24304a;border-radius:10px}.round-meta span{display:block;color:#75839d;font-size:9px;text-transform:uppercase}.round-meta b{display:block;margin-top:4px;color:#e8efff;font-size:12px;word-break:break-word}
         .ws-log{height:230px;overflow:auto;background:#070c16;border:1px solid #24304a;border-radius:15px;padding:13px;font:11px/1.7 ui-monospace;color:#b9c7df}.ws-log div{border-bottom:1px solid #17233a;padding:5px 0}
         .ws-code{margin:0;background:#070c16;color:#dce7ff;border:1px solid #24304a;border-radius:15px;padding:16px;overflow:auto;font:11px/1.7 ui-monospace}
         .ws-note{padding:14px;border-left:3px solid #4e9aff;border-radius:0 12px 12px 0;background:rgba(78,154,255,.07);color:#aebbd2;font-size:12px;line-height:1.7}
@@ -1200,14 +1200,14 @@ socket.onmessage = (event) =&gt; {
         <section class="ws-hero">
           <span class="endpoint-kicker"><i class="live-dot"></i> REALTIME GAME API</span>
           <h2>WebSocket & Live Round Monitor</h2>
-          <p>Connect to the production WebSocket, authenticate with your Game API key, watch the current Crash Game round update live, and fetch a specific round from the REST API.</p>
+          <p>Use the production WebSocket for live updates, or use the authenticated REST endpoint to fetch the latest/current round and look up a specific round number.</p>
           <div class="ws-url">wss://api.game-api.online/realtime</div>
         </section>
 
         <section class="ws-grid">
           <article class="ws-card">
             <h3>Connect to live rounds</h3>
-            <p>Enter an API key, connect, and listen for <code>crash_status</code> messages. The page keeps the latest live round visible.</p>
+            <p>Enter an API key, connect, and listen for <code>crash_status</code> messages. The latest round is updated automatically as events arrive.</p>
             <div class="ws-form">
               <label for="ws-api-key">GAME API KEY</label>
               <input id="ws-api-key" type="password" autocomplete="off" placeholder="Paste your API key">
@@ -1218,13 +1218,14 @@ socket.onmessage = (event) =&gt; {
 
           <article class="ws-card">
             <h3>Current round</h3>
-            <p>The current round is populated from live WebSocket events. If the stream is connected, this card updates automatically.</p>
+            <p>Fetch the latest round directly from the Crash Game REST endpoint. After connecting, WebSocket events continue to update this card live.</p>
+            <div class="ws-actions"><button class="ws-primary" id="ws-fetch-current">Fetch current round</button></div>
             <div class="round-box" id="ws-current-round"><div class="round-big">—</div><div class="round-meta"><div><span>Status</span><b>Waiting</b></div><div><span>Multiplier</span><b>—</b></div><div><span>Updated</span><b>—</b></div></div></div>
           </article>
 
           <article class="ws-card">
-            <h3>Get a round</h3>
-            <p>Enter a round number. The page requests recent Crash Game rounds and finds the requested round in the returned data.</p>
+            <h3>Get a specific round</h3>
+            <p>Enter a round number. The page requests recent Crash Game rounds and searches the returned records for that exact round.</p>
             <div class="ws-form">
               <label for="ws-round-number">ROUND NUMBER</label>
               <input id="ws-round-number" inputmode="numeric" type="number" min="1" placeholder="125">
@@ -1235,7 +1236,7 @@ socket.onmessage = (event) =&gt; {
 
           <article class="ws-card">
             <h3>Connection events</h3>
-            <p>Useful messages from the realtime connection appear below for debugging your integration.</p>
+            <p>Realtime messages and REST lookup results appear here for debugging.</p>
             <div class="ws-log" id="ws-log"><div>Waiting for connection…</div></div>
           </article>
         </section>
@@ -1259,7 +1260,7 @@ socket.onmessage = event =&gt; {
     console.log("Multiplier:", message.multiplier);
   }
 };</pre>
-          <div class="ws-note"><b>Security:</b> this private console tool does not save the API key to your account. Keep production API keys on your trusted backend and never commit them to source control.</div>
+          <div class="ws-note"><b>Security:</b> the private console tool does not save the API key to your account. Keep production API keys on your trusted backend and never commit them to source control.</div>
         </section>
       </div>`;
   }
