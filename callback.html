@@ -39,8 +39,15 @@ try{
   if(error) throw error;
   if(!data.session) throw new Error("No authenticated session was found.");
 
-  statusEl.textContent="Sign in successful. Opening your dashboard…";
-  setTimeout(()=>location.replace("dashboard.html"),250);
+  const aal=await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if(aal.error) throw aal.error;
+  if(aal.data && aal.data.currentLevel==="aal1" && aal.data.nextLevel==="aal2"){
+    statusEl.textContent="Sign in successful. TOTP verification is required…";
+    setTimeout(()=>location.replace("entertotp.html"),250);
+  }else{
+    statusEl.textContent="Sign in successful. Opening your dashboard…";
+    setTimeout(()=>location.replace("dashboard.html"),250);
+  }
 }catch(error){
   spinner.style.display="none";
   statusEl.textContent="We could not complete your sign in.";
