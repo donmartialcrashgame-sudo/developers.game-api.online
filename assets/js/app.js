@@ -1211,12 +1211,38 @@
   window.addEventListener("error",function(e){notify("error","Page error",e.message||"Unexpected error");});
   window.addEventListener("unhandledrejection",function(e){notify("error","Operation failed",e.reason&&e.reason.message?e.reason.message:String(e.reason||"Unhandled error"));});
 
-  document.addEventListener("DOMContentLoaded",function(){
+  async function enforceAuthGate(key){
+    if(key==="login") return true;
+    var sb=await connectSupabase();
+    if(!sb){location.replace("login.html");return false;}
+    try{
+      var sessionResult=await sb.auth.getSession();
+      var session=sessionResult.data&&sessionResult.data.session;
+      if(!session){location.replace("login.html");return false;}
+      var aalResult=await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+      if(aalResult.error) throw aalResult.error;
+      var aal=aalResult.data||{};
+      if(key!=="entertotp" && aal.currentLevel==="aal1" && aal.nextLevel==="aal2"){
+        location.replace("entertotp.html");
+        return false;
+      }
+      return true;
+    }catch(e){
+      console.warn("Authentication gate check failed:",e);
+      location.replace("login.html");
+      return false;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded",async function(){
     try{
       var loader=document.createElement("div");
       loader.className="page-loader";
       loader.innerHTML='<div class="loader-content"><div class="loader-logo">G<span></span></div><strong>Game API</strong><small>Preparing developer workspace</small><div class="loader-track"><i></i></div></div>';
       document.body.appendChild(loader);
+      var key=pageKey();
+      var allowed=await enforceAuthGate(key);
+      if(!allowed)return;
       boot();
       requestAnimationFrame(function(){setTimeout(function(){loader.classList.add("hide");setTimeout(function(){if(loader.parentNode)loader.remove();},420);},520);});
     }catch(e){
