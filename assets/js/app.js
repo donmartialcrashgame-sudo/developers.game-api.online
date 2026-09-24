@@ -1177,6 +1177,161 @@ socket.onmessage = (event) =&gt; {
       </div>`;
   }
 
+  function websocketContent(){
+    return `
+      <style>
+        .ws-page{display:grid;gap:18px}
+        .ws-hero{padding:28px;border:1px solid var(--line,#24304a);border-radius:24px;background:linear-gradient(135deg,rgba(47,128,255,.14),rgba(124,92,255,.08)),var(--panel,#0d1424)}
+        .ws-hero h2{margin:8px 0;font-size:30px}.ws-hero p{max-width:800px;color:#91a0ba;line-height:1.7}
+        .ws-url{margin-top:18px;padding:15px;border-radius:14px;background:#070c16;border:1px solid #24304a;font:13px ui-monospace;color:#dce7ff;word-break:break-all}
+        .ws-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.ws-card{padding:20px;border:1px solid #24304a;border-radius:20px;background:#0d1424}
+        .ws-card h3{margin:0 0 7px;font-size:17px}.ws-card p{color:#91a0ba;font-size:12px;line-height:1.6}
+        .ws-form{display:grid;gap:10px}.ws-form label{font-size:10px;color:#7e8ca7;font-weight:800;letter-spacing:.08em}.ws-form input{width:100%;box-sizing:border-box;padding:12px;border-radius:10px;border:1px solid #2a3854;background:#070c16;color:#e8efff;outline:none}
+        .ws-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:4px}.ws-actions button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer}.ws-primary{background:#2563eb;color:#fff}.ws-secondary{background:#18243a;color:#dce7ff}
+        .ws-status{display:flex;align-items:center;gap:8px;color:#91a0ba;font-size:11px;margin-top:8px}.ws-status i{width:8px;height:8px;border-radius:50%;background:#64748b}.ws-status.live i{background:#22c55e;box-shadow:0 0 12px #22c55e}
+        .round-box{min-height:150px;padding:18px;border-radius:15px;background:#070c16;border:1px solid #24304a}.round-big{font-size:34px;font-weight:900;letter-spacing:-.04em}.round-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}.round-meta div{padding:10px;border:1px solid #24304a;border-radius:10px}.round-meta span{display:block;color:#75839d;font-size:9px;text-transform:uppercase}.round-meta b{display:block;margin-top:4px;color:#e8efff;font-size:12px}
+        .ws-log{height:230px;overflow:auto;background:#070c16;border:1px solid #24304a;border-radius:15px;padding:13px;font:11px/1.7 ui-monospace;color:#b9c7df}.ws-log div{border-bottom:1px solid #17233a;padding:5px 0}
+        .ws-code{margin:0;background:#070c16;color:#dce7ff;border:1px solid #24304a;border-radius:15px;padding:16px;overflow:auto;font:11px/1.7 ui-monospace}
+        .ws-note{padding:14px;border-left:3px solid #4e9aff;border-radius:0 12px 12px 0;background:rgba(78,154,255,.07);color:#aebbd2;font-size:12px;line-height:1.7}
+        @media(max-width:850px){.ws-grid{grid-template-columns:1fr}.round-meta{grid-template-columns:1fr}}
+      </style>
+      <div class="ws-page">
+        <section class="ws-hero">
+          <span class="endpoint-kicker"><i class="live-dot"></i> REALTIME GAME API</span>
+          <h2>WebSocket & Live Round Monitor</h2>
+          <p>Connect to the production WebSocket, authenticate with your Game API key, watch the current Crash Game round update live, and fetch a specific round from the REST API.</p>
+          <div class="ws-url">wss://api.game-api.online/realtime</div>
+        </section>
+
+        <section class="ws-grid">
+          <article class="ws-card">
+            <h3>Connect to live rounds</h3>
+            <p>Enter an API key, connect, and listen for <code>crash_status</code> messages. The page keeps the latest live round visible.</p>
+            <div class="ws-form">
+              <label for="ws-api-key">GAME API KEY</label>
+              <input id="ws-api-key" type="password" autocomplete="off" placeholder="Paste your API key">
+              <div class="ws-actions"><button class="ws-primary" id="ws-connect">Connect</button><button class="ws-secondary" id="ws-disconnect">Disconnect</button></div>
+              <div class="ws-status" id="ws-status"><i></i><span>Disconnected</span></div>
+            </div>
+          </article>
+
+          <article class="ws-card">
+            <h3>Current round</h3>
+            <p>The current round is populated from live WebSocket events. If the stream is connected, this card updates automatically.</p>
+            <div class="round-box" id="ws-current-round"><div class="round-big">—</div><div class="round-meta"><div><span>Status</span><b>Waiting</b></div><div><span>Multiplier</span><b>—</b></div><div><span>Updated</span><b>—</b></div></div></div>
+          </article>
+
+          <article class="ws-card">
+            <h3>Get a round</h3>
+            <p>Enter a round number. The page requests recent Crash Game rounds and finds the requested round in the returned data.</p>
+            <div class="ws-form">
+              <label for="ws-round-number">ROUND NUMBER</label>
+              <input id="ws-round-number" inputmode="numeric" type="number" min="1" placeholder="125">
+              <button class="ws-primary" id="ws-get-round">Get round</button>
+              <div id="ws-round-result" class="round-box"><div class="round-big">—</div><div class="round-meta"><div><span>Status</span><b>Enter a round number</b></div><div><span>Multiplier</span><b>—</b></div><div><span>Crash time</span><b>—</b></div></div></div>
+            </div>
+          </article>
+
+          <article class="ws-card">
+            <h3>Connection events</h3>
+            <p>Useful messages from the realtime connection appear below for debugging your integration.</p>
+            <div class="ws-log" id="ws-log"><div>Waiting for connection…</div></div>
+          </article>
+        </section>
+
+        <section class="ws-card">
+          <h3>Integration example</h3>
+          <pre class="ws-code">const socket = new WebSocket("wss://api.game-api.online/realtime");
+
+socket.onopen = () =&gt; {
+  socket.send(JSON.stringify({
+    type: "auth",
+    apiKey: "YOUR_GAME_API_KEY"
+  }));
+};
+
+socket.onmessage = event =&gt; {
+  const message = JSON.parse(event.data);
+  if (message.type === "crash_status") {
+    console.log("Current round:", message.round_number);
+    console.log("Status:", message.status);
+    console.log("Multiplier:", message.multiplier);
+  }
+};</pre>
+          <div class="ws-note"><b>Security:</b> this private console tool does not save the API key to your account. Keep production API keys on your trusted backend and never commit them to source control.</div>
+        </section>
+      </div>`;
+  }
+
+  function initWebsocketPage(){
+    var socket=null;
+    var keyInput=document.getElementById("ws-api-key");
+    var status=document.getElementById("ws-status");
+    var current=document.getElementById("ws-current-round");
+    var roundInput=document.getElementById("ws-round-number");
+    var roundResult=document.getElementById("ws-round-result");
+    var log=document.getElementById("ws-log");
+    function writeLog(value){
+      if(!log)return;
+      var line=document.createElement("div");
+      line.textContent=new Date().toLocaleTimeString()+"  "+(typeof value==="string"?value:JSON.stringify(value));
+      log.prepend(line);
+    }
+    function setStatus(text,live){
+      if(status){status.className="ws-status"+(live?" live":"");status.querySelector("span").textContent=text;}
+    }
+    function renderCurrent(m){
+      if(!current)return;
+      current.innerHTML='<div class="round-big">#'+esc(m.round_number||"—")+'</div><div class="round-meta"><div><span>Status</span><b>'+esc(m.status||"—")+'</b></div><div><span>Multiplier</span><b>'+esc(m.multiplier||"—")+'</b></div><div><span>Updated</span><b>'+esc(new Date().toLocaleTimeString())+'</b></div></div>';
+    }
+    function connect(){
+      var apiKey=String(keyInput&&keyInput.value||"").trim();
+      if(!apiKey){alert("Enter your Game API key first.");return;}
+      if(socket){try{socket.close();}catch(e){}}
+      setStatus("Connecting…",false); writeLog("Opening WebSocket…");
+      socket=new WebSocket("wss://api.game-api.online/realtime");
+      socket.onopen=function(){
+        setStatus("Connected — authenticating",true); writeLog({type:"open"});
+        socket.send(JSON.stringify({type:"auth",apiKey:apiKey}));
+      };
+      socket.onmessage=function(event){
+        var message;
+        try{message=JSON.parse(event.data);}catch(e){writeLog(event.data);return;}
+        writeLog(message);
+        if(message.type==="crash_status" || message.round_number!=null){
+          renderCurrent(message);
+        }
+        if(message.type==="auth_error") setStatus("Authentication error",false);
+      };
+      socket.onerror=function(){setStatus("WebSocket error",false);writeLog("WebSocket error");};
+      socket.onclose=function(){setStatus("Disconnected",false);writeLog("Connection closed");socket=null;};
+    }
+    function disconnect(){if(socket){socket.close();socket=null;}setStatus("Disconnected",false);}
+    async function getRound(){
+      var apiKey=String(keyInput&&keyInput.value||"").trim(), n=Number(roundInput&&roundInput.value);
+      if(!apiKey){alert("Enter your Game API key first.");return;}
+      if(!n){alert("Enter a round number.");return;}
+      roundResult.innerHTML='<div class="round-big">Loading…</div><div class="round-meta"><div><span>Status</span><b>Fetching</b></div><div><span>Round</span><b>#'+esc(n)+'</b></div><div><span>Source</span><b>REST API</b></div></div>';
+      try{
+        var response=await fetch("https://api.game-api.online/api/v1/crash/rounds",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},body:JSON.stringify({limit:100})});
+        var data=await response.json().catch(function(){return{};});
+        if(!response.ok) throw new Error(data.error||data.message||("HTTP "+response.status));
+        var rows=Array.isArray(data.data)?data.data:[];
+        var found=rows.find(function(r){return Number(r.round_number)===n;});
+        if(!found) throw new Error("Round #"+n+" was not included in the latest "+rows.length+" returned rounds.");
+        roundResult.innerHTML='<div class="round-big">#'+esc(found.round_number)+'</div><div class="round-meta"><div><span>Status</span><b>'+esc(found.status||"—")+'</b></div><div><span>Multiplier</span><b>'+esc(found.multiplier||"—")+'</b></div><div><span>Crash time</span><b>'+esc(found.crashed_at||found.ended_at||"—")+'</b></div></div>';
+        writeLog({type:"round_lookup",round_number:n,success:true});
+      }catch(e){
+        roundResult.innerHTML='<div class="round-big">Not found</div><div class="round-meta"><div><span>Result</span><b>'+esc(e.message||"Request failed")+'</b></div><div><span>Round</span><b>#'+esc(n)+'</b></div><div><span>Source</span><b>REST API</b></div></div>';
+        writeLog({type:"round_lookup",success:false,error:e.message});
+      }
+    }
+    var connectBtn=document.getElementById("ws-connect"), disconnectBtn=document.getElementById("ws-disconnect"), getBtn=document.getElementById("ws-get-round");
+    if(connectBtn)connectBtn.onclick=connect;
+    if(disconnectBtn)disconnectBtn.onclick=disconnect;
+    if(getBtn)getBtn.onclick=getRound;
+  }
+
   function genericContent(key){
     if(key==="overview") return overviewContent();
     if(key==="usage") return usageContent();
@@ -1291,6 +1446,9 @@ socket.onmessage = (event) =&gt; {
     }
     if(key==="analytics"){
       initAnalytics();
+    }
+    if(key==="websocket"){
+      initWebsocketPage();
     }
     if(key==="login"){
       var temp=document.getElementById("temporary-login");
