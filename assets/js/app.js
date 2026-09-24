@@ -10,8 +10,7 @@
     ]},
     { id:"api", label:"API", icon:"⌁", items:[
       ["API Keys","api-keys.html","⌘","keys"],
-      ["Documentation","documentation.html","▤","documentation"],
-      ["Private Documentation","private-documentation.html","▥","private-documentation"],
+      ["Documentation","private-documentation.html","▤","private-documentation"],
       ["How to Use Game API","how-to-use-gameapi.html","?","how-to-use-gameapi"],
       ["Endpoints","endpoints.html","↗","endpoints"],
       ["WebSocket","websocket.html","⌁","websocket"],
