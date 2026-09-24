@@ -712,6 +712,98 @@
     }).catch(function(e){notify("error","Security setup failed",securityAuthError(e));});
   }
 
+
+  function analyticsContent(){
+    return '<div class="analytics-page">'+
+      '<section class="analytics-hero glass-card"><div><span class="eyebrow">GAME API · ANALYTICS</span><h2>Request analytics</h2><p>Track the real request counts recorded against your API keys. Move your mouse over the chart or touch a point to inspect its request count.</p></div><div class="analytics-live"><i></i><span>LIVE DATA</span></div></section>'+
+      '<section class="metric-grid analytics-metrics">'+
+        metric("TOTAL REQUESTS","—","Recorded across your API keys","↗","blue","Live data")+
+        metric("ACTIVE KEYS","—","Keys currently usable","●","green","Live data")+
+        metric("TOP KEY","—","Highest recorded request count","⌁","purple","Live data")+
+        metric("LAST ACTIVITY","—","Most recent key activity","◷","orange","Live data")+
+      '</section>'+
+      '<section class="glass-card analytics-chart-card">'+
+        '<div class="card-head"><div><span class="card-kicker">REQUEST FLOW</span><h3>API request activity</h3><p>Each point represents the real request count recorded for an API key. Hover or touch a point for details.</p></div><span class="usage-badge" id="analytics-total-badge"><i></i> Loading</span></div>'+
+        '<div class="analytics-chart-wrap"><div class="analytics-chart-grid"></div><div class="analytics-chart-y" id="analytics-chart-y"></div><svg id="analytics-chart" class="analytics-svg" viewBox="0 0 1000 360" preserveAspectRatio="none" aria-label="API request activity chart"></svg><div id="analytics-tooltip" class="analytics-tooltip"></div><div id="analytics-chart-x" class="analytics-chart-x"></div></div>'+
+        '<div class="analytics-chart-note"><span><i></i> Request count</span><span>Hover/touch points for exact values</span></div>'+
+      '</section>'+
+      '<section class="analytics-grid">'+
+        '<div class="glass-card analytics-table-card"><div class="card-head"><div><span class="card-kicker">KEY BREAKDOWN</span><h3>Requests by API key</h3><p>Live totals returned by the key service.</p></div></div><div id="analytics-key-table" class="analytics-key-table"><div class="dashboard-empty"><b>Loading request data…</b></div></div></div>'+
+        '<div class="glass-card analytics-explain"><span class="card-kicker">HOW IT WORKS</span><h3>Understand your traffic</h3><div class="analytics-steps"><div><b>01</b><span><strong>Make a request</strong>Your application sends a request with its Game API key.</span></div><div><b>02</b><span><strong>Usage is recorded</strong>The API associates the request with the authenticated key.</span></div><div><b>03</b><span><strong>Chart updates</strong>Refresh the page to read the latest recorded totals.</span></div></div><p class="analytics-disclaimer">This page does not invent traffic history. If the API has not recorded requests for a key, its value remains zero.</p></div>'+
+      '</section>'+
+    '</div>';
+  }
+
+  function initAnalytics(){
+    connectSupabase().then(async function(sb){
+      if(!sb)return;
+      var sessionResult=await sb.auth.getSession().catch(function(){return null;});
+      if(!sessionResult||!sessionResult.data||!sessionResult.data.session){location.replace("login.html");return;}
+      var token=sessionResult.data.session.access_token;
+      var response=await fetch("https://api.game-api.online/api/keys",{headers:{"Accept":"application/json","Authorization":"Bearer "+token}});
+      var body=await response.text(),payload={};
+      try{payload=body?JSON.parse(body):{};}catch(e){}
+      if(!response.ok)throw new Error(payload.error||payload.message||("Usage service returned HTTP "+response.status));
+      var rows=Array.isArray(payload)?payload:(payload&&Array.isArray(payload.keys)?payload.keys:(payload&&Array.isArray(payload.data)?payload.data:[]));
+      renderAnalytics(rows);
+    }).catch(function(e){
+      var table=document.getElementById("analytics-key-table"), chart=document.getElementById("analytics-chart");
+      if(table)table.innerHTML='<div class="analytics-error"><b>Unable to load analytics</b><span>'+esc(e.message||"The request analytics source is unavailable.")+'</span></div>';
+      if(chart)chart.innerHTML="";
+      notify("error","Analytics unavailable",e.message||"Could not load request analytics.");
+    });
+  }
+
+  function renderAnalytics(rows){
+    var normalized=rows.map(function(x){return {
+      id:x.id||"",
+      name:x.name||"Unnamed key",
+      used:Math.max(0,Number(x.requests_used||0)),
+      status:String(x.status||"active").toLowerCase(),
+      lastUsed:x.last_used_at||x.last_used||""
+    };});
+    var total=normalized.reduce(function(s,x){return s+x.used;},0);
+    var active=normalized.filter(function(x){return x.status==="active";}).length;
+    var sorted=normalized.slice().sort(function(a,b){return b.used-a.used;});
+    var top=sorted[0];
+    var last=normalized.map(function(x){return x.lastUsed;}).filter(Boolean).sort().pop()||"—";
+    var cards=document.querySelectorAll(".analytics-metrics .metric");
+    if(cards[0])cards[0].querySelector("strong").textContent=String(total);
+    if(cards[1])cards[1].querySelector("strong").textContent=String(active);
+    if(cards[2])cards[2].querySelector("strong").textContent=top?top.name:"—";
+    if(cards[3])cards[3].querySelector("strong").textContent=last&&last!=="—"?formatAnalyticsDate(last):"—";
+    var badge=document.getElementById("analytics-total-badge");if(badge)badge.innerHTML='<i></i> '+total+' requests';
+    renderAnalyticsChart(sorted);
+    var table=document.getElementById("analytics-key-table");
+    if(!table)return;
+    if(!sorted.length){table.innerHTML='<div class="analytics-empty"><b>No API keys yet</b><span>Create an API key and make requests to see analytics here.</span></div>';return;}
+    table.innerHTML=sorted.map(function(x,i){
+      var pct=total?Math.round(x.used/total*100):0;
+      return '<div class="analytics-key-row"><div class="analytics-rank">'+String(i+1).padStart(2,"0")+'</div><div class="analytics-key-name"><b>'+esc(x.name)+'</b><small>'+esc(x.status.toUpperCase())+'</small></div><div class="analytics-key-progress"><i style="width:'+pct+'%"></i></div><strong>'+x.used.toLocaleString()+'</strong><span>'+pct+'%</span></div>';
+    }).join("");
+  }
+
+  function formatAnalyticsDate(v){
+    var d=new Date(v);return isNaN(d.getTime())?"—":d.toLocaleString();
+  }
+
+  function renderAnalyticsChart(rows){
+    var svg=document.getElementById("analytics-chart"),xhost=document.getElementById("analytics-chart-x"),yhost=document.getElementById("analytics-chart-y"),tip=document.getElementById("analytics-tooltip");
+    if(!svg)return;
+    if(!rows.length){svg.innerHTML='<text x="500" y="185" text-anchor="middle" class="analytics-svg-empty">No recorded requests yet</text>';return;}
+    var data=rows.slice(0,12),max=Math.max.apply(null,data.map(function(x){return x.used;}).concat([1])),w=1000,h=360,padX=48,padY=28,base=315,usableH=260;
+    var pts=data.map(function(x,i){var px=data.length===1?500:padX+i*(w-padX*2)/(data.length-1);var py=base-(x.used/max)*usableH;return {x:px,y:py,d:x};});
+    var line=pts.map(function(p,i){return (i?"L":"M")+" "+p.x.toFixed(1)+" "+p.y.toFixed(1);}).join(" ");
+    var area=line+" L "+pts[pts.length-1].x.toFixed(1)+" "+base+" L "+pts[0].x.toFixed(1)+" "+base+" Z";
+    var guides=[0,.25,.5,.75,1].map(function(v){return '<line x1="'+padX+'" y1="'+(base-v*usableH)+'" x2="'+(w-padX)+'" y2="'+(base-v*usableH)+'" class="analytics-guide"/>';}).join("");
+    svg.innerHTML='<defs><linearGradient id="analyticsArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="currentColor" stop-opacity=".24"/><stop offset="100%" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>'+guides+'<path d="'+area+'" class="analytics-area"></path><path d="'+line+'" class="analytics-line"></path>'+pts.map(function(p,i){return '<circle cx="'+p.x+'" cy="'+p.y+'" r="7" class="analytics-point" tabindex="0" data-index="'+i+'"></circle>';}).join("");
+    if(yhost)yhost.innerHTML=[max,Math.round(max*.75),Math.round(max*.5),Math.round(max*.25),0].map(function(v){return '<span>'+v.toLocaleString()+'</span>';}).join("");
+    if(xhost)xhost.innerHTML=data.map(function(x){return '<span title="'+esc(x.name)+'">'+esc(x.name.length>14?x.name.slice(0,13)+"…":x.name)+'</span>';}).join("");
+    function show(i,el){var p=pts[i];if(!p||!tip)return;tip.innerHTML='<b>'+esc(p.d.name)+'</b><strong>'+p.d.used.toLocaleString()+' requests</strong><small>'+esc(p.d.status.toUpperCase())+'</small>';tip.style.left=(p.x/10)+'%';tip.style.top=Math.max(4,(p.y/h*100)-8)+'%';tip.classList.add("show");svg.querySelectorAll(".analytics-point").forEach(function(q){q.classList.remove("active")});if(el)el.classList.add("active");}
+    function hide(){if(tip)tip.classList.remove("show");svg.querySelectorAll(".analytics-point").forEach(function(q){q.classList.remove("active")});}
+    svg.querySelectorAll(".analytics-point").forEach(function(el){var i=Number(el.dataset.index);el.addEventListener("mouseenter",function(){show(i,el)});el.addEventListener("focus",function(){show(i,el)});el.addEventListener("mouseleave",hide);el.addEventListener("touchstart",function(){show(i,el)},{passive:true});});
+  }
+
   function genericContent(key){
     if(key==="overview") return overviewContent();
     if(key==="usage") return usageContent();
@@ -719,6 +811,7 @@
     if(key==="profile") return profileContent();
     if(key==="authentication") return authenticationContent();
     if(key==="security") return securityContent();
+    if(key==="analytics") return analyticsContent();
     if(key==="how-to-use-gameapi") return howToUseContent();
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
@@ -818,6 +911,9 @@
     }
     if(key==="authentication" || key==="security"){
       initAuthSecurity(key);
+    }
+    if(key==="analytics"){
+      initAnalytics();
     }
     if(key==="login"){
       var temp=document.getElementById("temporary-login");
