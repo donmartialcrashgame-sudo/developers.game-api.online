@@ -13,6 +13,7 @@
       ["Documentation","private-documentation.html","▤","private-documentation"],
       ["How to Use Game API","private-how-to-use-gameapi.html","?","private-how-to-use-gameapi"],
       ["Endpoints","private-endpoints.html","↗","private-endpoints"],
+      ["Public Endpoints","endpoints.html","↗","endpoints"],
       ["WebSocket","websocket.html","⌁","websocket"],
       ["Logs","logs.html","☷","logs"],
       ["API Status","status.html","●","status"]
@@ -1732,6 +1733,7 @@ socket.onmessage = event =&gt; {
     };
 
     if(key==="logs") initLogs();
+    if(key==="websocket") initWebsocketPage();
 
     var left=document.getElementById("chat-left"),right=document.getElementById("chat-right");
     if(left)left.onclick=function(){saveChatSide("left");document.getElementById("chat-panel").classList.add("left");notify("success","Chat moved","Support chat is now on the left.");};
