@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+<title id="title">Game API System Architecture</title><desc id="desc">Users and applications connect through HTTPS or WebSocket to the Game API Server, which validates API keys and connects to the Crash Game Engine and external services.</desc>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#061126"/><stop offset="1" stop-color="#101b45"/></linearGradient>
+<filter id="s"><feDropShadow dx="0" dy="12" stdDeviation="15" flood-opacity=".35"/></filter>
+<marker id="b" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#38bdf8"/></marker>
+<marker id="p" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#a78bfa"/></marker>
+<marker id="o" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#fb923c"/></marker>
+</defs>
+<rect width="1400" height="820" rx="30" fill="url(#bg)"/>
+<g font-family="Inter,Arial,sans-serif">
+<text x="700" y="52" text-anchor="middle" fill="#fff" font-size="34" font-weight="900">Game API System Architecture</text>
+<text x="700" y="81" text-anchor="middle" fill="#94a3b8" font-size="15">How users, applications, the Game API server and live game services work together</text>
+
+<rect x="40" y="125" width="290" height="445" rx="24" fill="#0b1d3b" stroke="#2563eb" stroke-width="2.5" filter="url(#s)"/>
+<text x="70" y="168" fill="#fff" font-size="24" font-weight="800">Users / Clients</text><text x="70" y="194" fill="#94a3b8" font-size="12">Applications consuming Game API</text>
+<g fill="#071832" stroke="#1d4ed8">
+<rect x="68" y="225" width="234" height="88" rx="15"/><rect x="68" y="330" width="234" height="88" rx="15"/><rect x="68" y="435" width="234" height="88" rx="15"/>
+</g>
+<text x="90" y="259" fill="#38bdf8" font-size="17" font-weight="800">Web App</text><text x="90" y="282" fill="#a5b4fc" font-size="12">Browser / Dashboard</text>
+<text x="90" y="364" fill="#38bdf8" font-size="17" font-weight="800">Mobile App</text><text x="90" y="387" fill="#a5b4fc" font-size="12">iOS / Android</text>
+<text x="90" y="469" fill="#38bdf8" font-size="17" font-weight="800">Third-Party App</text><text x="90" y="492" fill="#a5b4fc" font-size="12">Developer / Backend</text>
+
+<rect x="470" y="105" width="450" height="485" rx="26" fill="#0a1b36" stroke="#2563eb" stroke-width="3" filter="url(#s)"/>
+<text x="510" y="151" fill="#fff" font-size="27" font-weight="900">Game API Server</text><text x="510" y="177" fill="#94a3b8" font-size="12">Central request, authentication and real-time layer</text>
+<g fill="#0d2849" stroke="#2563eb">
+<rect x="500" y="205" width="390" height="70" rx="14"/><rect x="500" y="290" width="390" height="70" rx="14"/><rect x="500" y="375" width="390" height="70" rx="14"/><rect x="500" y="460" width="390" height="70" rx="14"/>
+</g>
+<text x="525" y="234" fill="#38bdf8" font-size="17" font-weight="800">API Gateway</text><text x="525" y="257" fill="#cbd5e1" font-size="11">HTTPS · routing · request validation</text>
+<text x="525" y="319" fill="#38bdf8" font-size="17" font-weight="800">Authentication &amp; API Keys</text><text x="525" y="342" fill="#cbd5e1" font-size="11">Credential · plan · usage checks</text>
+<text x="525" y="404" fill="#38bdf8" font-size="17" font-weight="800">REST API Endpoints</text><text x="525" y="427" fill="#cbd5e1" font-size="11">Game data · crash rounds · resources</text>
+<text x="525" y="489" fill="#38bdf8" font-size="17" font-weight="800">WebSocket / Real-time</text><text x="525" y="512" fill="#cbd5e1" font-size="11">Live rounds · status events · broadcasts</text>
+
+<rect x="1060" y="105" width="300" height="235" rx="24" fill="#26170f" stroke="#f97316" stroke-width="2.5" filter="url(#s)"/>
+<text x="1090" y="148" fill="#fff" font-size="22" font-weight="900">Crash Game Engine</text><text x="1090" y="174" fill="#fdba74" font-size="12">Live game logic</text>
+<text x="1090" y="211" fill="#fed7aa" font-size="13">• Round generation</text><text x="1090" y="239" fill="#fed7aa" font-size="13">• Multiplier progression</text><text x="1090" y="267" fill="#fed7aa" font-size="13">• Betting → Running → Crash</text><text x="1090" y="295" fill="#fed7aa" font-size="13">• Real-time broadcasting</text>
+<rect x="1060" y="385" width="300" height="205" rx="24" fill="#111d35" stroke="#64748b" stroke-width="2.5" filter="url(#s)"/>
+<text x="1090" y="428" fill="#fff" font-size="22" font-weight="900">External Services</text><text x="1090" y="454" fill="#94a3b8" font-size="12">Connected integrations</text>
+<text x="1090" y="491" fill="#cbd5e1" font-size="13">• Email / notifications</text><text x="1090" y="519" fill="#cbd5e1" font-size="13">• Payment processing</text><text x="1090" y="547" fill="#cbd5e1" font-size="13">• Other supported services</text>
+
+<path d="M330 285C390 285 410 285 470 285" fill="none" stroke="#38bdf8" stroke-width="4" marker-end="url(#b)"/><text x="360" y="265" fill="#38bdf8" font-size="13" font-weight="800">HTTPS / REST</text>
+<path d="M330 455C390 455 410 455 470 455" fill="none" stroke="#a78bfa" stroke-width="4" marker-end="url(#p)"/><text x="365" y="435" fill="#a78bfa" font-size="13" font-weight="800">WebSocket</text>
+<path d="M920 255C980 255 1000 220 1060 220" fill="none" stroke="#fb923c" stroke-width="4" marker-end="url(#o)"/><text x="950" y="198" fill="#fb923c" font-size="13" font-weight="800">Game Logic</text>
+<path d="M920 485C980 485 1000 485 1060 485" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="8 7"/><text x="950" y="465" fill="#cbd5e1" font-size="13" font-weight="800">Integrations</text>
+
+<rect x="40" y="635" width="1320" height="135" rx="22" fill="#081832" stroke="#203858" stroke-width="2"/>
+<text x="70" y="672" fill="#fff" font-size="19" font-weight="900">Request Flow</text>
+<text x="70" y="714" fill="#38bdf8" font-size="13" font-weight="800">1 · USER REQUEST</text><text x="310" y="714" fill="#4ade80" font-size="13" font-weight="800">2 · API KEY VALIDATION</text><text x="610" y="714" fill="#fb923c" font-size="13" font-weight="800">3 · PROCESS REQUEST</text><text x="855" y="714" fill="#a78bfa" font-size="13" font-weight="800">4 · GAME / DATA</text><text x="1110" y="714" fill="#38bdf8" font-size="13" font-weight="800">5 · RESPONSE</text>
+<text x="70" y="740" fill="#94a3b8" font-size="11">Web / mobile / backend</text><text x="310" y="740" fill="#94a3b8" font-size="11">Credential + plan checks</text><text x="610" y="740" fill="#94a3b8" font-size="11">Route to service</text><text x="855" y="740" fill="#94a3b8" font-size="11">Fetch or live round</text><text x="1110" y="740" fill="#94a3b8" font-size="11">JSON / WebSocket</text>
+</g></svg>
