@@ -133,133 +133,109 @@
   }
 
   function initLogs(){
-    var body=document.getElementById("logs-body"), search=document.getElementById("logs-search"), method=document.getElementById("logs-method"), status=document.getElementById("logs-status");
-    var detail=document.getElementById("log-detail-backdrop"), detailContent=document.getElementById("log-detail-content"), detailTitle=document.getElementById("log-detail-title");
-    var logs=[];
-    function sample(){return [
-      {id:"demo-1",time:"10:42:18",method:"GET",endpoint:"/api/v1/crash/rounds",status:200,responseTime:"42 ms",key:"gk_live_••••91",request:{headers:{"content-type":"application/json","authorization":"Bearer ********"}},body:{},response:{success:true,game:"crash",data:[]}},
-      {id:"demo-2",time:"10:41:55",method:"POST",endpoint:"/api/v1/crash/bet",status:200,responseTime:"58 ms",key:"gk_live_••••91",request:{headers:{"content-type":"application/json"}},body:{amount:100},response:{success:true,message:"Bet accepted"}},
-      {id:"demo-3",time:"10:40:21",method:"GET",endpoint:"/api/v1/status",status:200,responseTime:"31 ms",key:"gk_live_••••91",request:{headers:{}},body:{},response:{success:true,status:"operational"}},
-      {id:"demo-4",time:"10:39:07",method:"WS",endpoint:"/realtime",status:101,responseTime:"Live",key:"gk_live_••••91",request:{headers:{}},body:null,response:{type:"connected",authenticated:true}}
-    ];}
-    function escJson(v){try{return JSON.stringify(v,null,2)}catch(e){return String(v)}}
+    var body=document.getElementById("logs-body"), search=document.getElementById("logs-search");
+    var detail=document.getElementById("log-detail-backdrop"), detailContent=document.getElementById("log-detail-content"), detailTitle=document.getElementById("log-detail-title"), refresh=document.getElementById("logs-refresh");
+    var logs=[],busy=false,timer=null;
+
+    function formatTime(v){
+      var d=new Date(v);
+      return isNaN(d.getTime())?String(v):d.toLocaleString();
+    }
+    function normalize(row){
+      var prefix=row.key_prefix||"gapi";
+      return {
+        id:String(row.api_key_id),
+        time:row.usage_updated_at||row.last_used_at||row.period_start,
+        keyName:row.api_key_name||"Unnamed API key",
+        key:prefix+(row.key_last4?" · ••••"+row.key_last4:""),
+        keyId:row.api_key_id||"—",
+        status:String(row.api_key_status||"unknown"),
+        plan:String(row.plan||"free"),
+        requests:Number(row.request_count||0),
+        lastUsed:row.last_used_at,
+        createdAt:row.api_key_created_at,
+        expiresAt:row.expires_at,
+        period:row.period_start
+      };
+    }
     function render(){
-      var q=(search.value||"").toLowerCase(), m=method.value, s=status.value;
-      var filtered=logs.filter(function(x){return (!m||x.method===m)&&(!s||String(x.status).charAt(0)===s)&&(!q||(x.endpoint+" "+x.method+" "+x.status+" "+x.key).toLowerCase().indexOf(q)>-1)});
-      if(!filtered.length){body.innerHTML='<tr><td colspan="7"><div class="logs-empty"><b>No requests found</b><span>Try changing your filters or refresh the logs.</span></div></td></tr>';return;}
-      body.innerHTML=filtered.map(function(x){var ok=x.status<400||x.status===101;return '<tr class="log-row" data-id="'+x.id+'"><td class="log-time">'+x.time+'</td><td><span class="method '+(ok?"green":"pink")+'">'+x.method+'</span></td><td><b class="log-endpoint">'+x.endpoint+'</b></td><td><span class="log-status '+(ok?"ok":"error")+'">'+x.status+'</span></td><td>'+x.responseTime+'</td><td><code>'+x.key+'</code></td><td><span class="row-arrow">›</span></td></tr>';}).join("");
-      body.querySelectorAll(".log-row").forEach(function(row){row.onclick=function(){var x=logs.find(function(a){return a.id===row.dataset.id});if(!x)return;detailTitle.textContent=x.method+" "+x.endpoint;detailContent.innerHTML='<div class="detail-grid"><div><span>STATUS</span><b>'+x.status+'</b></div><div><span>RESPONSE TIME</span><b>'+x.responseTime+'</b></div><div><span>API KEY</span><b>'+x.key+'</b></div><div><span>TIME</span><b>'+x.time+'</b></div></div><div class="detail-section"><span>REQUEST HEADERS</span><pre>'+esc(escJson(x.request&&x.request.headers||{}))+'</pre></div><div class="detail-section"><span>REQUEST BODY</span><pre>'+esc(escJson(x.body))+'</pre></div><div class="detail-section response-block"><span>ACTUAL RESPONSE</span><pre>'+esc(escJson(x.response))+'</pre></div>';detail.classList.add("open");};});
-    }
-    function load(){
-      body.innerHTML='<tr><td colspan="7"><div class="logs-empty"><b>Loading logs…</b><span>Reading recorded API activity.</span></div></td></tr>';
-      /* The real logging endpoint can be configured without changing the UI. */
-      var endpoint=localStorage.getItem("gameapi_logs_endpoint");
-      if(!endpoint){logs=sample();render();return;}
-      fetch(endpoint,{credentials:"include"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(data){logs=Array.isArray(data)?data:(data.data||data.logs||[]);render();}).catch(function(){logs=[];body.innerHTML='<tr><td colspan="7"><div class="logs-empty error"><b>Unable to load live logs</b><span>Set the logging endpoint in API Configuration, then refresh.</span></div></td></tr>';});
-    }
-    search.oninput=render;method.onchange=render;status.onchange=render;document.getElementById("logs-refresh").onclick=load;
-    document.getElementById("log-detail-close").onclick=function(){detail.classList.remove("open");};detail.onclick=function(e){if(e.target===detail)detail.classList.remove("open");};
-    load();
-  }
-
-  function saveChatSide(side){
-    try{localStorage.setItem("gameapi_chat_side",side);}catch(e){}
-    document.documentElement.setAttribute("data-chat-side",side);
-  }
-
-  function loadChatSide(){
-    try{return localStorage.getItem("gameapi_chat_side")||"right";}catch(e){return "right";}
-  }
-
-  function notify(type,title,msg){
-    var host=document.getElementById("alerts");
-    if(!host){
-      host=document.createElement("div");
-      host.id="alerts";
-      host.className="alerts";
-      document.body.appendChild(host);
-    }
-    var n=document.createElement("div");
-    n.className="alert "+type;
-    n.innerHTML='<span class="alert-mark">'+(type==="error"?"!":type==="success"?"✓":"i")+'</span><div class="alert-copy"><b>'+esc(title)+'</b><span>'+esc(msg||"")+'</span></div><button aria-label="Close">×</button>';
-    n.querySelector("button").onclick=function(){n.remove();};
-    host.appendChild(n);
-    setTimeout(function(){if(n.parentNode)n.remove();},5500);
-  }
-
-  function renderGroups(key){
-    var html="";
-    GROUPS.forEach(function(g){
-      var active=g.items.some(function(x){return x[3]===key;});
-      html += '<section class="nav-section '+(active?"is-active":"")+'" data-group="'+g.id+'">';
-      html += '<button class="nav-section-head" type="button"><span class="nav-section-chevron">›</span><span class="nav-section-name">'+g.label+'</span><span class="nav-section-icon">'+g.icon+'</span></button>';
-      html += '<div class="nav-submenu '+(active?"open":"")+'">';
-      g.items.forEach(function(x){
-        html += '<a class="nav-link '+(key===x[3]?"active":"")+'" href="'+x[1]+'" title="'+esc(x[0])+'"><span class="nav-link-icon">'+x[2]+'</span><span class="nav-link-text">'+esc(x[0])+'</span>'+(key===x[3]?'<i class="active-pulse"></i>':"")+'</a>';
+      var q=(search.value||"").toLowerCase();
+      var filtered=logs.filter(function(x){
+        return !q||(x.keyName+" "+x.key+" "+x.keyId+" "+x.plan+" "+x.status).toLowerCase().indexOf(q)>-1;
       });
-      html += '</div></section>';
-    });
-    return html;
-  }
-
-  function dashboardContent(){
-    return '<div class="dashboard-home">'+
-      '<section class="hero-card">'+
-        '<div class="hero-noise"></div><div class="hero-grid"></div>'+
-        '<div class="hero-copy"><div class="eyebrow"><span class="live-dot"></span> GAME API · AUTHENTICATED WORKSPACE</div>'+
-        '<h2>Your developer workspace, <span>connected to your account.</span></h2>'+
-        '<p>Manage your real Game API account, credentials and integrations from one workspace. Live values are loaded from your authenticated session and connected services — no sample activity is shown.</p>'+
-        '<div class="hero-actions"><a href="api-keys.html" class="primary-btn">Manage API Keys <b>→</b></a><a href="documentation.html" class="secondary-btn">Read documentation</a><a href="how-to-use-gameapi.html" class="secondary-btn">How to use Game API</a></div></div>'+
-        '<div class="hero-visual"><div class="visual-glow"></div><div class="signal-ring r1"></div><div class="signal-ring r2"></div><div class="signal-ring r3"></div><div class="signal-core"><span>G</span><i></i></div><div class="float-chip chip-a">ACCOUNT <b>LIVE</b></div><div class="float-chip chip-b">AUTH <b>CONNECTED</b></div><div class="float-chip chip-c">API <b>ONLINE</b></div></div>'+
-      '</section>'+
-      '<section class="metric-grid real-metrics">'+
-        metric("ACCOUNT","Connected","Authenticated session","●","blue","Live"), metric("API STATUS","Checking…","api.game-api.online","●","green","Live"), metric("API KEYS","—","Connected key records","⌘","purple","Live data"), metric("USAGE","—","Awaiting usage source","◫","orange","Live data")+
-      '</section>'+
-      '<section class="dashboard-grid dashboard-insights">'+
-        '<div class="glass-card key-snapshot-card">'+
-          '<div class="card-head"><div><span class="card-kicker">API CREDENTIAL</span><h3>Recent API key</h3><p>Your latest real API key, shown safely.</p></div><a href="api-keys.html">Manage →</a></div>'+
-          '<div class="key-snapshot" id="dashboard-recent-key"><div class="dashboard-empty"><b>Checking your API keys…</b><span>Your latest key will appear here when available.</span></div></div>'+
-        '</div>'+
-        '<div class="glass-card dashboard-chart-card">'+
-          '<div class="card-head"><div><span class="card-kicker">MONTHLY USAGE</span><h3>Requests by API key</h3><p>Real request counts returned by the API key service.</p></div><span class="usage-badge" id="dashboard-chart-badge"><i></i> Waiting</span></div>'+
-          '<div class="key-usage-chart" id="dashboard-key-chart"><div class="dashboard-empty"><b>Loading usage…</b><span>Reading current request counts.</span></div></div>'+
-        '</div>'+
-      '</section>'+
-      '<section class="dashboard-grid">'+
-        '<div class="glass-card activity-card"><div class="card-head"><div><span class="card-kicker">REAL-TIME</span><h3>API activity</h3><p>Only connected activity is shown here.</p></div><a href="logs.html">View logs →</a></div><div class="activity-list" id="dashboard-activity"><div class="dashboard-empty"><b>Live activity source not connected</b><span>No demo requests are displayed. Connect the real logging source to populate this panel.</span></div></div></div>'+
-        '<div class="glass-card health-card"><div class="card-head"><div><span class="card-kicker">SYSTEM</span><h3>Service health</h3><p>Live status from the Game API service</p></div><span class="health-badge" id="dashboard-health-badge"><i></i> Checking</span></div><div class="health-visual"><div class="health-score" id="dashboard-health-score">—<small></small></div><div class="health-bars health-bars-live" id="dashboard-health-bars"></div></div><div class="health-footer"><span>API</span><b id="dashboard-api-health">Checking</b><span>WebSocket</span><b>Configured</b></div></div>'+
-      '</section>'+
-      '<section class="glass-card account-summary"><div class="card-head"><div><span class="card-kicker">YOUR ACCOUNT</span><h3 id="dashboard-user-heading">Authenticated developer</h3><p id="dashboard-user-subtitle">Loading your Supabase account details…</p></div><a href="profile.html">View profile →</a></div><div class="account-summary-grid"><div><span>NAME</span><b id="dashboard-user-name">Loading…</b></div><div><span>EMAIL</span><b id="dashboard-user-email">Loading…</b></div><div><span>USER ID</span><b id="dashboard-user-id">Loading…</b></div><div><span>AUTH PROVIDER</span><b id="dashboard-user-provider">Loading…</b></div></div></section>'+
-      '<section class="live-monitor glass-card"><div class="live-monitor-head"><div><span class="card-kicker">WORKSPACE FLOW</span><h3>Build with Game API</h3><p>A clear path from account setup to your first live integration.</p></div><span class="stream-status"><i></i> READY</span></div><div class="dashboard-flow"><a href="how-to-use-gameapi.html"><span>01</span><b>Learn the flow</b><small>Authentication, API keys and requests</small><i>→</i></a><a href="api-keys.html" id="dashboard-key-action-wrap"><span>02</span><b id="dashboard-key-action">Create an API key</b><small id="dashboard-key-summary">Checking your API keys…</small><i>→</i></a><a href="documentation.html"><span>03</span><b>Choose an endpoint</b><small>Follow the request and response documentation</small><i>→</i></a><a href="logs.html"><span>04</span><b>Inspect activity</b><small>Review real recorded requests when available</small><i>→</i></a></div></section>'+
-      '<section class="glass-card tools-card"><div class="card-head"><div><span class="card-kicker">WORKSPACE</span><h3>Developer tools</h3><p>Jump into the tools you use most</p></div></div><div class="tool-grid">'+
-        tool("⌘","API Keys","Create, rotate and revoke credentials","api-keys.html","blue")+tool("?","How to Use Game API","Follow the complete integration guide","how-to-use-gameapi.html","purple")+tool("⌁","WebSocket","Inspect live real-time events","websocket.html","blue")+tool("▤","Documentation","Learn the API reference","documentation.html","green")+
-      '</div></section>'+
-      '</div>';
-  }
-
-  function liveMonitor(){
-    return '<section class="live-monitor glass-card"><div class="live-monitor-head"><div><span class="card-kicker">LIVE SERVICE</span><h3>Game API connection</h3><p>The dashboard checks the production API status without inventing round or request data.</p></div><span class="stream-status"><i></i> LIVE CHECK</span></div><div class="monitor-stage"><div class="monitor-grid"></div><div class="monitor-core"><span id="live-multiplier">API</span><small id="live-service-label">STATUS CHECK</small></div><div class="monitor-dot d1"></div><div class="monitor-dot d2"></div><div class="monitor-dot d3"></div><div class="monitor-chip mc1">SERVICE <b id="live-service-status">CHECKING</b></div><div class="monitor-chip mc2">SOURCE <b>GAME API</b></div><div class="monitor-chip mc3">MODE <b>LIVE</b></div></div><div class="monitor-footer"><div><span>SERVICE</span><b id="live-footer-service">Checking</b></div><div><span>STATUS</span><b id="live-footer-status" class="live-green">Checking</b></div><div><span>SOURCE</span><b>api.game-api.online</b></div><div><span>AUTH</span><b class="live-green">Authenticated</b></div></div></section>';
-  }
-
-  function metric(label,value,sub,icon,cls,trend){
-    return '<div class="metric '+cls+'"><div class="metric-icon">'+icon+'</div><div class="metric-copy"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></div><em>'+trend+'</em></div>';
-  }
-  function activity(method,path,status,time,cls){
-    return '<div class="activity-row"><span class="method '+cls+'">'+method+'</span><div class="activity-main"><b>'+path+'</b><small>'+time+' response time</small></div><span class="request-status '+cls+'">'+status+'</span><span class="row-arrow">›</span></div>';
-  }
-  function tool(icon,title,desc,href,cls){
-    return '<a class="tool-item '+cls+'" href="'+href+'"><span class="tool-icon">'+icon+'</span><span><b>'+title+'</b><small>'+desc+'</small></span><i>↗</i></a>';
-  }
-
-  function loginContent(){
-    return '<div class="login-page"><section class="login-card"><div class="login-logo"><span>G</span></div><span class="eyebrow">GAME API · DEVELOPER CONSOLE</span><h2>Welcome back</h2><p>Sign in access will be connected later. For now, this screen is only the temporary entry point for the developer console.</p><form class="login-form" onsubmit="return false"><label>Email address</label><input type="email" placeholder="you@example.com" autocomplete="email"><label>Password</label><input type="password" placeholder="Your password" autocomplete="current-password"><button class="primary-btn" type="button" id="temporary-login">Continue to dashboard <b>→</b></button></form><div class="login-note">Authentication setup is intentionally deferred.</div></section></div>';
+      if(!filtered.length){
+        body.innerHTML='<tr><td colspan="7"><div class="logs-empty"><b>No API-key activity found</b><span>Supabase has no recorded usage for the API keys available to this account yet.</span></div></td></tr>';
+        return;
+      }
+      body.innerHTML=filtered.map(function(x){
+        var active=x.status==="active";
+        return '<tr class="log-row" data-id="'+esc(x.id)+'">'+
+          '<td class="log-time">'+esc(formatTime(x.time))+'</td>'+
+          '<td><b>'+esc(x.keyName)+'</b></td>'+
+          '<td><code>'+esc(x.key)+'</code></td>'+
+          '<td><span class="log-status '+(active?"ok":"error")+'">'+esc(x.status)+'</span></td>'+
+          '<td><b>'+esc(String(x.requests))+'</b> requests</td>'+
+          '<td>'+esc(x.plan.charAt(0).toUpperCase()+x.plan.slice(1))+'</td>'+
+          '<td><span class="row-arrow">›</span></td>'+
+        '</tr>';
+      }).join("");
+      body.querySelectorAll(".log-row").forEach(function(row){
+        row.onclick=function(){
+          var x=logs.find(function(a){return a.id===row.dataset.id});
+          if(!x)return;
+          detailTitle.textContent=x.keyName+" · API key activity";
+          detailContent.innerHTML=
+            '<div class="detail-grid">'+
+              '<div><span>API KEY</span><b>'+esc(x.keyName)+'</b></div>'+
+              '<div><span>KEY</span><b>'+esc(x.key)+'</b></div>'+
+              '<div><span>STATUS</span><b>'+esc(x.status)+'</b></div>'+
+              '<div><span>PLAN</span><b>'+esc(x.plan)+'</b></div>'+
+              '<div><span>REQUESTS THIS PERIOD</span><b>'+esc(String(x.requests))+'</b></div>'+
+              '<div><span>KEY ID</span><b>'+esc(x.keyId)+'</b></div>'+
+            '</div>'+
+            '<div class="detail-section"><span>LAST USED</span><pre>'+esc(x.lastUsed?formatTime(x.lastUsed):"No recorded API use yet")+'</pre></div>'+
+            '<div class="detail-section"><span>USAGE PERIOD</span><pre>'+esc(x.period||"—")+'</pre></div>'+
+            '<div class="detail-section"><span>KEY CREATED</span><pre>'+esc(x.createdAt?formatTime(x.createdAt):"—")+'</pre></div>'+
+            '<div class="detail-section"><span>KEY EXPIRY</span><pre>'+esc(x.expiresAt?formatTime(x.expiresAt):"No expiry recorded")+'</pre></div>';
+          detail.classList.add("open");
+        };
+      });
+    }
+    async function load(){
+      if(busy)return;
+      busy=true;
+      try{
+        var sb=await connectSupabase();
+        if(!sb)throw new Error("Supabase client unavailable");
+        var sessionResult=await sb.auth.getSession();
+        var session=sessionResult.data&&sessionResult.data.session;
+        if(!session)throw new Error("Not authenticated");
+        var result=await sb.from("developer_api_activity")
+          .select("api_key_id,customer_id,api_key_name,key_prefix,key_last4,api_key_status,plan,last_used_at,api_key_created_at,expires_at,period_start,request_count,usage_updated_at")
+          .order("usage_updated_at",{ascending:false,nullsFirst:false})
+          .order("last_used_at",{ascending:false,nullsFirst:false});
+        if(result.error)throw result.error;
+        logs=(result.data||[]).map(normalize);
+        render();
+      }catch(e){
+        console.error("Supabase API activity logs failed:",e);
+        if(!logs.length)body.innerHTML='<tr><td colspan="7"><div class="logs-empty error"><b>Could not load Supabase API activity</b><span>Check that you are signed in and your API usage records are available.</span></div></td></tr>';
+      }finally{busy=false;}
+    }
+    search.oninput=render;
+    refresh.onclick=load;
+    document.getElementById("log-detail-close").onclick=function(){detail.classList.remove("open");};
+    detail.onclick=function(e){if(e.target===detail)detail.classList.remove("open");};
+    load();
+    timer=setInterval(load,5000);
+    window.addEventListener("beforeunload",function(){if(timer)clearInterval(timer);});
   }
 
   function logsContent(){
     return '<div class="logs-page">'
-      + '<section class="glass-card logs-toolbar"><div class="logs-toolbar-main"><div><span class="card-kicker">API ACTIVITY</span><h3>Request logs</h3><p>Every recorded API call appears here. Click a request to inspect the actual response.</p></div><button class="primary-btn" id="logs-refresh">Refresh logs <b>↻</b></button></div><div class="logs-filters"><input id="logs-search" placeholder="Search endpoint, method, status or API key…"><select id="logs-method"><option value="">All methods</option><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>WS</option></select><select id="logs-status"><option value="">All status</option><option value="2">2xx Success</option><option value="4">4xx Client error</option><option value="5">5xx Server error</option></select></div></section>'
-      + '<section class="glass-card logs-table-card"><div class="logs-table-wrap"><table class="logs-table"><thead><tr><th>TIME</th><th>METHOD</th><th>ENDPOINT</th><th>STATUS</th><th>RESPONSE</th><th>API KEY</th><th></th></tr></thead><tbody id="logs-body"><tr><td colspan="7"><div class="logs-empty"><b>Loading logs…</b><span>Connecting to the API logging system.</span></div></td></tr></tbody></table></div></section>'
-      + '<div class="log-detail-backdrop" id="log-detail-backdrop"><section class="log-detail-panel"><div class="log-detail-head"><div><span class="card-kicker">REQUEST DETAILS</span><h3 id="log-detail-title">API request</h3></div><button id="log-detail-close">×</button></div><div id="log-detail-content"></div></section></div>'
+      + '<section class="glass-card logs-toolbar"><div class="logs-toolbar-main"><div><span class="card-kicker">SUPABASE · API ACTIVITY</span><h3>API usage logs</h3><p>Live API-key usage records loaded directly from your authenticated Supabase account.</p></div><button class="primary-btn" id="logs-refresh">Refresh activity <b>↻</b></button></div><div class="logs-filters"><input id="logs-search" placeholder="Search API key, prefix, plan or status…"></div></section>'
+      + '<section class="glass-card logs-table-card"><div class="logs-table-wrap"><table class="logs-table"><thead><tr><th>UPDATED</th><th>API KEY</th><th>KEY</th><th>STATUS</th><th>REQUESTS</th><th>PLAN</th><th></th></tr></thead><tbody id="logs-body"><tr><td colspan="7"><div class="logs-empty"><b>Loading Supabase activity…</b><span>Reading your authenticated API usage records.</span></div></td></tr></tbody></table></div></section>'
+      + '<div class="log-detail-backdrop" id="log-detail-backdrop"><section class="log-detail-panel"><div class="log-detail-head"><div><span class="card-kicker">API KEY DETAILS</span><h3 id="log-detail-title">API key activity</h3></div><button id="log-detail-close">×</button></div><div id="log-detail-content"></div></section></div>'
       + '</div>';
   }
 
