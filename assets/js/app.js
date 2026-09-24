@@ -11,7 +11,7 @@
     { id:"api", label:"API", icon:"⌁", items:[
       ["API Keys","api-keys.html","⌘","keys"],
       ["Documentation","private-documentation.html","▤","private-documentation"],
-      ["How to Use Game API","how-to-use-gameapi.html","?","how-to-use-gameapi"],
+      ["How to Use Game API","private-how-to-use-gameapi.html","?","private-how-to-use-gameapi"],
       ["Endpoints","endpoints.html","↗","endpoints"],
       ["WebSocket","websocket.html","⌁","websocket"],
       ["Logs","logs.html","☷","logs"],
@@ -52,7 +52,8 @@
     keys:["API Keys","Secure credentials for your applications"],
     documentation:["Documentation","Build and integrate with Game API"],
     "private-documentation":["Private Documentation","Authenticated integration reference for your developer workspace"],
-    "how-to-use-gameapi":["How to Use Game API","Step-by-step guide to authenticate, create a key and make your first request"],
+    "how-to-use-gameapi":["How to Use Game API","Public step-by-step guide to connect and make your first request"],
+    "private-how-to-use-gameapi":["Private How to Use Game API","Authenticated step-by-step integration guide for your developer workspace"],
     endpoints:["Endpoints","Explore available API resources"],
     websocket:["WebSocket","Real-time connection and event tools"],
     logs:["Logs","Inspect every API request and its response"],
@@ -262,22 +263,46 @@
 
   function howToUseContent(){
     return '<div class="guide-page">'+
-      '<section class="guide-hero glass-card"><div><span class="eyebrow">GAME API · GETTING STARTED</span><h2>How to use Game API</h2><p>Follow these steps to authenticate, create an API key, make requests and inspect your integration.</p></div><a class="primary-btn" href="api-keys.html">Create API key <b>→</b></a></section>'+
+      '<section class="guide-hero glass-card"><div><span class="eyebrow">GAME API · PUBLIC GUIDE</span><h2>How to use Game API</h2><p>Learn the basic integration flow, from creating an API key to making requests and connecting to real-time services.</p></div><a class="primary-btn" href="documentation.html">Read documentation <b>→</b></a></section>'+
+      '<section class="glass-card guide-visual"><img src="assets/game-api-how-to-use.svg" alt="Game API integration flow illustration"></section>'+
       '<section class="guide-grid">'+
-        guideStep("01","Sign in","Use your real Game API developer account. The dashboard uses your authenticated Supabase session and displays your account identity.","login.html","Sign in")+
-        guideStep("02","Create an API key","Open API Keys and create a credential for your application. Keep secret keys private and rotate them when necessary.","keys.html","Open API Keys")+
-        guideStep("03","Choose an endpoint","Use the API documentation to select the resource your application needs. Follow the documented HTTP method, path, parameters and response format.","documentation.html","Open documentation")+
-        guideStep("04","Send your request","Send the request from your server or trusted application using the API key required by the endpoint. Never expose secret credentials in public client code.","documentation.html","View request docs")+
-        guideStep("05","Use real-time features","When your integration requires live events, follow the WebSocket documentation and use the exact production WebSocket endpoint configured for your workspace.","websocket.html","Open WebSocket")+
-        guideStep("06","Inspect your activity","Use Logs to inspect recorded requests when the real logging source is available. The dashboard does not insert sample requests into your activity.","logs.html","View logs")+
+        guideStep("01","Create your account","Register for a Game API developer account and complete the available verification steps.","register.html","Create account")+
+        guideStep("02","Create an API key","Open the developer console, create a key and give it a clear application or environment name.","login.html","Open console")+
+        guideStep("03","Store the key securely","Keep production secrets on your backend or secret manager. Never put them in public browser code.","documentation.html","Security guide")+
+        guideStep("04","Choose an endpoint","Read the public API documentation for the method, URL, parameters and response format you need.","documentation.html","Open documentation")+
+        guideStep("05","Send your request","Call the endpoint from a trusted server with the authentication format required by that service.","documentation.html","View request docs")+
+        guideStep("06","Use real-time events","Connect to the production WebSocket endpoint when your application needs live game updates.","documentation.html#websocket","WebSocket docs")+
       '</section>'+
-      '<section class="glass-card guide-checklist"><div class="card-head"><div><span class="card-kicker">BEFORE YOU GO LIVE</span><h3>Integration checklist</h3><p>Keep credentials secure and verify each part of your integration.</p></div></div><div class="check-grid"><div><b>✓</b><span>Authenticated Game API account</span></div><div><b>✓</b><span>API key created and stored securely</span></div><div><b>✓</b><span>Endpoint selected from the documentation</span></div><div><b>✓</b><span>Error and response handling implemented</span></div><div><b>✓</b><span>WebSocket configured only when required</span></div><div><b>✓</b><span>Real request activity verified in Logs</span></div></div></section>'+
+      '<section class="glass-card guide-checklist"><div class="card-head"><div><span class="card-kicker">PUBLIC CHECKLIST</span><h3>Ready for the next step?</h3><p>Once you understand the basics, sign in for the private developer workflow.</p></div></div><div class="check-grid"><div><b>✓</b><span>Developer account created</span></div><div><b>✓</b><span>API key created securely</span></div><div><b>✓</b><span>Endpoint selected</span></div><div><b>✓</b><span>Request and error handling planned</span></div><div><b>✓</b><span>WebSocket used only when needed</span></div><div><b>✓</b><span>Production secrets protected</span></div></div></section>'+
+      '<section class="glass-card guide-private-link"><span class="card-kicker">PRIVATE DEVELOPER GUIDE</span><h3>Need the detailed workspace instructions?</h3><p>The private guide includes the complete integration workflow, API-key handling, request patterns, crash-game integration, WebSocket flow, troubleshooting and production checklist.</p><a class="primary-btn" href="private-how-to-use-gameapi.html">Open private guide <b>→</b></a></section>'+
       '</div>';
   }
-  function guideStep(num,title,desc,href,label){
-    return '<article class="guide-step glass-card"><span class="guide-number">'+num+'</span><div><h3>'+title+'</h3><p>'+desc+'</p><a href="'+href+'">'+label+' →</a></div></article>';
+  function privateHowToUseContent(){
+    return '<style>.private-guide{display:grid;gap:18px}.private-guide .guide-hero{display:flex;justify-content:space-between;gap:24px;align-items:center;padding:30px}.private-guide .guide-hero h2{margin:5px 0 8px;font-size:30px;letter-spacing:-.045em}.private-guide .guide-hero p{max-width:780px;color:#aab7ca;font-size:12px;line-height:1.8}.private-guide .guide-art{border-radius:16px;overflow:hidden;border:1px solid #203858;background:#071126;margin:18px 0}.private-guide .guide-art img{display:block;width:100%;height:auto}.private-guide .private-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.private-guide .private-step{padding:22px}.private-guide .private-step h3{margin:7px 0;color:#172033;font-size:17px}.private-guide .private-step p,.private-guide li{font-size:11px;line-height:1.8;color:#64748b}.private-guide pre{background:#071126;color:#dbeafe;padding:16px;border-radius:12px;overflow:auto;font-size:10px;line-height:1.7}.private-guide .guide-callout{margin:16px 0;padding:14px 16px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe}.private-guide .guide-callout b,.private-guide .guide-callout span{display:block;font-size:10px}.private-guide .guide-callout b{color:#1d4ed8;margin-bottom:3px}.private-guide .guide-callout span{color:#475569;line-height:1.7}.private-guide .guide-table{border:1px solid #e5eaf1;border-radius:12px;overflow:hidden;margin:15px 0}.private-guide .guide-table>div{display:grid;grid-template-columns:180px 1fr;border-top:1px solid #e5eaf1}.private-guide .guide-table>div:first-child{border-top:0;background:#f8fafc}.private-guide .guide-table span,.private-guide .guide-table b{padding:10px 12px;font-size:10px;color:#475569}.private-guide .guide-table>*+*{border-left:1px solid #e5eaf1}.private-guide .guide-check{display:grid;gap:9px}.private-guide .guide-check div{padding:11px 13px;border:1px solid #e5eaf1;border-radius:10px;background:#f8fafc;color:#475569;font-size:10px}@media(max-width:850px){.private-guide .private-steps{grid-template-columns:1fr}.private-guide .guide-hero{align-items:flex-start}}@media(max-width:600px){.private-guide .guide-hero{padding:22px}.private-guide .guide-hero h2{font-size:24px}.private-guide .guide-table>div{grid-template-columns:1fr}.private-guide .guide-table>*+*{border-left:0;border-top:1px solid #e5eaf1}}</style>'+
+      '<div class="private-guide">'+
+      '<section class="guide-hero glass-card"><div><span class="eyebrow">GAME API · PRIVATE GETTING STARTED</span><h2>How to use Game API</h2><p>This private guide walks you through the complete developer-console workflow: credentials, requests, crash-game data, WebSocket events, troubleshooting and production readiness.</p></div><a class="primary-btn" href="api-keys.html">Manage API keys <b>→</b></a></section>'+
+      '<section class="glass-card doc-section"><span class="card-kicker">01 · VISUAL OVERVIEW</span><h3>From your application to Game API</h3><p>Your application sends HTTPS requests or opens a WebSocket connection. Game API validates the required credential and routes the request to the appropriate service.</p><div class="guide-art"><img src="assets/game-api-how-to-use.svg" alt="Detailed Game API integration flow"></div></section>'+
+      '<section class="private-steps">'+
+      '<article class="glass-card private-step"><span class="card-kicker">02 · ACCOUNT</span><h3>1. Sign in</h3><p>Sign in to your Game API developer account. Complete any required email, passkey or additional security verification before accessing the workspace.</p><a href="profile.html">Open profile →</a></article>'+
+      '<article class="glass-card private-step"><span class="card-kicker">03 · CREDENTIALS</span><h3>2. Create and protect an API key</h3><p>Open API Keys and create a credential for a specific application or environment. Use descriptive names and revoke credentials that are no longer needed.</p><a href="api-keys.html">Open API Keys →</a></article>'+
+      '<article class="glass-card private-step"><span class="card-kicker">04 · REQUESTS</span><h3>3. Make an authenticated request</h3><p>Send the credential in the format required by the target endpoint. Use a trusted server for production secrets.</p><pre><code>curl -X GET "https://api.game-api.online/your-endpoint" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre></article>'+
+      '<article class="glass-card private-step"><span class="card-kicker">05 · RESPONSES</span><h3>4. Handle success and errors</h3><p>Check the HTTP status before processing the response body. Handle 401, 403, 429 and 5xx responses without infinite retries.</p></article>'+
+      '<article class="glass-card private-step"><span class="card-kicker">06 · CRASH GAME</span><h3>5. Consume crash-game data</h3><p>Crash rounds move through server-controlled states such as betting, running and crash. Treat server responses and real-time events as the source of truth.</p><pre><code>{
+  "type": "crash_status",
+  "status": "crash",
+  "round_number": 125,
+  "multiplier": "3.47"
+}</code></pre></article>'+
+      '<article class="glass-card private-step"><span class="card-kicker">07 · REAL-TIME</span><h3>6. Connect with WebSocket</h3><p>Use the production real-time endpoint for live events:</p><pre><code>wss://api.game-api.online/realtime</code></pre><p>Authenticate the connection, process supported events and reconnect with exponential backoff after unexpected closure.</p></article>'+
+      '</section>'+
+      '<section class="glass-card doc-section"><span class="card-kicker">08 · PRODUCTION</span><h3>Production integration checklist</h3><div class="guide-check"><div>☐ Production API secret is stored outside source code</div><div>☐ Test and production credentials are separated</div><div>☐ HTTPS is used for production requests</div><div>☐ 401, 403, 429 and 5xx responses are handled</div><div>☐ WebSocket reconnect logic is implemented where required</div><div>☐ Secrets are excluded from logs and repositories</div><div>☐ API usage and plan limits are monitored</div><div>☐ Exposed or retired credentials can be revoked quickly</div></div></section>'+
+      '<section class="glass-card doc-section"><span class="card-kicker">09 · TROUBLESHOOTING</span><h3>Common issues</h3><div class="guide-table"><div><b>Problem</b><b>What to check</b></div><div><span>Invalid or revoked key</span><span>Confirm the key is active and that the correct credential is being sent.</span></div><div><span>401 Unauthorized</span><span>Check the credential, authorization header and endpoint requirements.</span></div><div><span>429 Too Many Requests</span><span>Reduce request frequency and apply backoff.</span></div><div><span>WebSocket auth error</span><span>Check the handshake sequence, credential format and connection state.</span></div><div><span>CORS error in browser</span><span>Keep secrets server-side and verify whether the endpoint supports browser-origin access.</span></div></div></section>'+
+      '<section class="glass-card guide-callout"><b>Need the public introduction?</b><span>Use the public guide when sharing Game API onboarding instructions with users who are not signed in.</span><br><a href="how-to-use-gameapi.html">Open public guide →</a></section>'+
+      '</div>';
   }
-  function overviewContent(){
+    function overviewContent(){
     return '<div class="overview-page">'+
       '<section class="overview-hero glass-card"><div><span class="eyebrow"><span class="live-dot"></span> GAME API · WORKSPACE OVERVIEW</span><h2>One place to understand your integration.</h2><p>See your authenticated workspace, production API connection and the areas that need attention. Values that require backend data are clearly marked instead of using demo figures.</p></div><a href="how-to-use-gameapi.html" class="primary-btn">How to use Game API <b>→</b></a></section>'+
       '<section class="metric-grid overview-metrics">'+
@@ -836,6 +861,7 @@
     if(key==="analytics") return analyticsContent();
     if(key==="private-documentation") return privateDocumentationContent();
     if(key==="how-to-use-gameapi") return howToUseContent();
+    if(key==="private-how-to-use-gameapi") return privateHowToUseContent();
     var m=META[key] || META.dashboard;
     return '<div class="module-page"><section class="module-banner"><div><span class="eyebrow">GAME API · MODULE</span><h2>'+esc(m[0])+'</h2><p>'+esc(m[1])+'</p></div><div class="module-orb"><span>'+esc(m[0].charAt(0))+'</span></div></section>'+
       '<section class="module-layout"><div class="glass-card module-main"><div class="card-head"><div><span class="card-kicker">CONNECTED</span><h3>'+esc(m[0])+' workspace</h3><p>This page uses the authenticated developer console shell.</p></div><span class="health-badge"><i></i> Authenticated</span></div><div class="module-actions"><button id="module-test" class="primary-btn">Run module check <b>→</b></button><a href="how-to-use-gameapi.html" class="secondary-btn">How to use Game API</a></div><div class="module-status"><div><span>Environment</span><b>Production</b></div><div><span>Access</span><b>Authenticated</b></div><div><span>Interface</span><b>Responsive</b></div></div></div>'+
