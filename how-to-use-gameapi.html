@@ -1,19 +1,44 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#2563eb">
-<meta name="description" content="How to use Game API">
+<meta name="description" content="How to use Game API — public step-by-step integration guide.">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-<title>How to Use Game API • Developer Console</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./assets/css/app.css?v=20260923">
+<title>How to Use Game API • Public Guide</title>
+<style>
+:root{--bg:#f6f8fc;--ink:#172033;--muted:#64748b;--blue:#2563eb;--line:#e5eaf1;--card:#fff;--dark:#071126}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.65}
+a{color:inherit}.wrap{max-width:1180px;margin:auto;padding:24px}.top{padding:18px 0 10px;display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{font-weight:900;letter-spacing:-.04em;font-size:22px}.brand span{color:var(--blue)}.nav{display:flex;gap:9px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border:1px solid var(--line);border-radius:11px;text-decoration:none;font-size:12px;font-weight:800;background:#fff}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.hero{margin-top:25px;padding:48px;border-radius:25px;background:linear-gradient(135deg,#071126,#142a62);color:#fff;display:grid;grid-template-columns:1.25fr .75fr;gap:30px;align-items:center;overflow:hidden}.eyebrow{font-size:10px;letter-spacing:.15em;font-weight:900;color:#7dd3fc}.hero h1{font-size:44px;line-height:1.05;letter-spacing:-.055em;margin:10px 0 15px}.hero p{color:#cbd5e1;max-width:700px;font-size:14px}.hero-art{width:100%;border-radius:18px;box-shadow:0 25px 55px #0007}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:20px;margin-top:20px}.toc{position:sticky;top:18px;align-self:start;background:#fff;border:1px solid var(--line);border-radius:17px;padding:16px}.toc b{font-size:9px;letter-spacing:.13em;color:#94a3b8}.toc a{display:block;text-decoration:none;padding:9px 10px;border-radius:9px;font-size:11px;color:var(--muted)}.toc a:hover{background:#eff6ff;color:var(--blue)}
+.content{display:grid;gap:15px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px}.card h2{margin:4px 0 9px;font-size:25px;letter-spacing:-.035em}.card h3{margin:24px 0 8px;font-size:15px}.card p,.card li{font-size:12px;color:var(--muted)}.card pre{background:var(--dark);color:#dbeafe;padding:17px;border-radius:12px;overflow:auto;font-size:11px}.kicker{font-size:9px;font-weight:900;letter-spacing:.13em;color:var(--blue)}.callout{margin:18px 0;padding:15px 17px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:13px;font-size:11px;color:#475569}.callout b{display:block;color:#1d4ed8;margin-bottom:3px}.steps{display:grid;gap:12px}.step{display:grid;grid-template-columns:48px 1fr;gap:14px;align-items:start;padding:15px;border:1px solid var(--line);border-radius:14px;background:#fbfcfe}.num{width:38px;height:38px;border-radius:11px;background:#dbeafe;color:#1d4ed8;display:grid;place-items:center;font-weight:900}.step h3{margin:1px 0 4px}.step p{margin:0}.img-card{margin:20px 0;border:1px solid var(--line);border-radius:17px;overflow:hidden;background:#071126}.img-card img{display:block;width:100%;height:auto}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.footer{padding:35px 0;color:#94a3b8;font-size:11px;text-align:center}
+@media(max-width:850px){.hero{grid-template-columns:1fr}.hero-art{max-width:560px}.layout{grid-template-columns:1fr}.toc{position:relative;top:auto}.grid2{grid-template-columns:1fr}}@media(max-width:560px){.wrap{padding:15px}.hero{padding:28px 22px}.hero h1{font-size:34px}.card{padding:21px}.top{align-items:flex-start;flex-direction:column}}
+</style>
 </head>
 <body>
-<div id="app"></div>
-<script src="./assets/js/app.js?v=20260923"></script>
-</body>
-</html>
+<div class="wrap">
+<header class="top"><div class="brand"><span>G</span> Game API</div><nav class="nav"><a class="btn" href="documentation.html">Documentation</a><a class="btn" href="login.html">Developer Login</a><a class="btn primary" href="register.html">Create Account</a></nav></header>
+<section class="hero"><div><span class="eyebrow">PUBLIC · GETTING STARTED</span><h1>How to use Game API</h1><p>A visual, step-by-step guide for connecting your application, creating an API key, sending requests, using real-time events and preparing your integration for production.</p><div class="nav"><a class="btn primary" href="#steps">Start the guide →</a><a class="btn" href="documentation.html">Read API docs</a></div></div><img class="hero-art" src="assets/game-api-how-to-use.svg" alt="Illustration of a user application connecting to the Game API server"></section>
+<div class="layout">
+<aside class="toc"><b>HOW TO USE</b><a href="#steps">Step-by-step</a><a href="#architecture">Connection flow</a><a href="#request">First request</a><a href="#realtime">Real-time</a><a href="#security">Security</a><a href="#production">Go live</a></aside>
+<main class="content">
+<section id="steps" class="card"><span class="kicker">01 · STEP-BY-STEP</span><h2>From account to working integration</h2><p>Use this sequence when starting a new Game API integration.</p><div class="steps">
+<div class="step"><span class="num">01</span><div><h3>Create your developer account</h3><p>Register for a Game API developer account and complete the available verification steps.</p></div></div>
+<div class="step"><span class="num">02</span><div><h3>Open API Keys</h3><p>Sign in to the developer console and create a key with a clear name such as Production Backend or Testing.</p></div></div>
+<div class="step"><span class="num">03</span><div><h3>Store the secret safely</h3><p>Keep the API secret on your backend, in an environment variable or secret manager. Do not place it in browser JavaScript.</p></div></div>
+<div class="step"><span class="num">04</span><div><h3>Select an endpoint</h3><p>Read the API documentation for the HTTP method, URL, parameters, authentication format and response shape.</p></div></div>
+<div class="step"><span class="num">05</span><div><h3>Send a request</h3><p>Call the endpoint from your trusted server and handle both successful and error responses.</p></div></div>
+<div class="step"><span class="num">06</span><div><h3>Add real-time features when needed</h3><p>Use the production WebSocket endpoint for live game events instead of polling unnecessarily.</p></div></div>
+</div></section>
+<section id="architecture" class="card"><span class="kicker">02 · CONNECTION FLOW</span><h2>How your application connects</h2><p>Your application talks to the Game API server through HTTPS or WebSocket. The server handles credential validation and routes requests to the appropriate service.</p><div class="img-card"><img src="assets/game-api-architecture.svg" alt="Game API architecture showing clients, Game API server, crash game engine and external services"></div></section>
+<section id="request" class="card"><span class="kicker">03 · FIRST REQUEST</span><h2>Make an authenticated request</h2><p>Use the API credential required by the endpoint and send it from a trusted application.</p><pre><code>curl -X GET "https://api.game-api.online/your-endpoint" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre><div class="callout"><b>Keep your key private</b>The example uses a placeholder. Never publish your real secret key in HTML, frontend JavaScript, GitHub repositories or screenshots.</div></section>
+<section id="realtime" class="card"><span class="kicker">04 · REAL-TIME</span><h2>Use the WebSocket service</h2><p>For live game information, connect to the Game API real-time endpoint and follow the authentication and event contract documented for your integration.</p><pre><code>wss://api.game-api.online/realtime</code></pre><p>Handle connection errors, authentication failures, unexpected closes and reconnects with backoff.</p></section>
+<section id="security" class="card"><span class="kicker">05 · SECURITY</span><h2>Protect your integration</h2><div class="grid2"><div class="callout"><b>Server-side secrets</b>Store production API keys only on trusted backend systems.</div><div class="callout"><b>Credential rotation</b>Revoke exposed or retired keys and issue replacements.</div><div class="callout"><b>HTTPS</b>Use encrypted HTTPS connections for production API traffic.</div><div class="callout"><b>Safe logs</b>Never log Authorization headers or complete API secrets.</div></div></section>
+<section id="production" class="card"><span class="kicker">06 · GO LIVE</span><h2>Production checklist</h2><ul><li>Account and API key are active.</li><li>Production credentials are stored securely.</li><li>Requests handle 401, 403, 429 and 5xx responses.</li><li>WebSocket reconnect logic is implemented if real-time data is used.</li><li>No secrets are committed to source control.</li><li>Usage and plan limits are monitored.</li><li>Test credentials and production credentials are separated.</li></ul><div class="callout"><b>Need the detailed reference?</b>Sign in to access the private How to Use Game API guide and developer-console workflows.</div><a class="btn primary" href="private-how-to-use-gameapi.html">Open private guide →</a></section>
+</main></div>
+<footer class="footer">Game API · Public developer guide</footer>
+</div>
+</body></html>
