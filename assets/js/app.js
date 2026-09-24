@@ -943,6 +943,151 @@ if (!response.ok) throw new Error(data.message || "Request failed");</code></pre
         '</article></section></div>';
   }
 
+  function endpointsContent(){
+    return `
+      <style>
+        .endpoints-page{display:grid;gap:18px}
+        .endpoint-hero{position:relative;overflow:hidden;border:1px solid var(--line,#24304a);border-radius:24px;padding:28px;background:linear-gradient(135deg,rgba(47,128,255,.14),rgba(124,92,255,.08)),var(--panel,#0d1424)}
+        .endpoint-hero:after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;right:-90px;top:-130px;border:1px solid rgba(90,150,255,.18);box-shadow:0 0 0 35px rgba(90,150,255,.035),0 0 0 70px rgba(90,150,255,.02)}
+        .endpoint-kicker{display:inline-flex;gap:8px;align-items:center;font-size:11px;font-weight:800;letter-spacing:.16em;color:#7db4ff}
+        .endpoint-hero h2{margin:10px 0 8px;font-size:30px}
+        .endpoint-hero p{max-width:760px;color:var(--muted,#91a0ba);line-height:1.7;margin:0}
+        .endpoint-base-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:22px}
+        .endpoint-base{position:relative;z-index:1;border:1px solid var(--line,#24304a);border-radius:16px;padding:16px;background:rgba(7,12,23,.5)}
+        .endpoint-base span{display:block;font-size:10px;font-weight:800;letter-spacing:.12em;color:#7e8ca7;margin-bottom:8px}
+        .endpoint-base code{font-size:14px;color:#eaf1ff;word-break:break-all}
+        .endpoint-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+        .endpoint-card{border:1px solid var(--line,#24304a);border-radius:20px;background:var(--panel,#0d1424);padding:20px}
+        .endpoint-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+        .endpoint-card h3{margin:0 0 5px;font-size:17px}
+        .endpoint-card p{margin:0;color:var(--muted,#91a0ba);font-size:13px;line-height:1.6}
+        .endpoint-list{display:grid;gap:9px}
+        .endpoint-row{display:grid;grid-template-columns:70px minmax(0,1fr);gap:10px;align-items:center;padding:11px 12px;border:1px solid rgba(130,150,190,.12);border-radius:12px;background:rgba(255,255,255,.018)}
+        .endpoint-method{font-size:10px;font-weight:900;letter-spacing:.08em;text-align:center;padding:6px 7px;border-radius:7px;background:rgba(65,145,255,.12);color:#83b9ff}
+        .endpoint-method.ws{background:rgba(157,108,255,.12);color:#b99aff}
+        .endpoint-path{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#e8efff;word-break:break-all}
+        .endpoint-auth{display:block;color:#75839d;font-size:10px;margin-top:4px}
+        .endpoint-code{border:1px solid var(--line,#24304a);border-radius:18px;background:#070c16;overflow:hidden}
+        .endpoint-code-head{padding:12px 15px;border-bottom:1px solid rgba(130,150,190,.12);font-size:11px;font-weight:800;letter-spacing:.1em;color:#7e8ca7}
+        .endpoint-code pre{margin:0;padding:17px;overflow:auto;color:#dce7ff;font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace}
+        .endpoint-note{border-left:3px solid #4e9aff;padding:14px 16px;border-radius:0 12px 12px 0;background:rgba(78,154,255,.07);color:#aebbd2;font-size:13px;line-height:1.65}
+        .endpoint-note b{color:#edf4ff}
+        .endpoint-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+        .endpoint-step{padding:15px;border:1px solid var(--line,#24304a);border-radius:15px;background:rgba(255,255,255,.018)}
+        .endpoint-step strong{display:block;color:#75adff;font-size:11px;margin-bottom:7px}
+        .endpoint-step b{display:block;font-size:13px;margin-bottom:4px}
+        .endpoint-step span{display:block;color:#7f8da7;font-size:11px;line-height:1.5}
+        @media(max-width:850px){.endpoint-grid,.endpoint-base-grid{grid-template-columns:1fr}.endpoint-flow{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:520px){.endpoint-flow{grid-template-columns:1fr}.endpoint-hero{padding:20px}.endpoint-hero h2{font-size:24px}}
+      </style>
+      <div class="endpoints-page">
+        <section class="endpoint-hero">
+          <span class="endpoint-kicker"><i class="live-dot"></i> GAME API / PRODUCTION ENDPOINTS</span>
+          <h2>Connect to Game API</h2>
+          <p>Use the production HTTPS API for authenticated requests and the production WebSocket for live events. API keys are required for game-data endpoints and WebSocket authentication.</p>
+          <div class="endpoint-base-grid">
+            <div class="endpoint-base"><span>REST API BASE URL</span><code>https://api.game-api.online</code></div>
+            <div class="endpoint-base"><span>WEBSOCKET ENDPOINT</span><code>wss://api.game-api.online/realtime</code></div>
+          </div>
+        </section>
+
+        <section class="endpoint-grid">
+          <article class="endpoint-card">
+            <div class="endpoint-card-head"><div><h3>System</h3><p>Public service information and health checks.</p></div><span class="health-badge"><i></i> Public</span></div>
+            <div class="endpoint-list">
+              <div class="endpoint-row"><span class="endpoint-method">GET</span><div><div class="endpoint-path">/</div><small class="endpoint-auth">Service information</small></div></div>
+              <div class="endpoint-row"><span class="endpoint-method">GET</span><div><div class="endpoint-path">/health</div><small class="endpoint-auth">Health check</small></div></div>
+            </div>
+          </article>
+
+          <article class="endpoint-card">
+            <div class="endpoint-card-head"><div><h3>Game data</h3><p>Authenticated game-data resources.</p></div><span class="health-badge"><i></i> API key</span></div>
+            <div class="endpoint-list">
+              <div class="endpoint-row"><span class="endpoint-method">POST</span><div><div class="endpoint-path">/api/v1/crash/rounds</div><small class="endpoint-auth">Bearer API key · body: { "limit": 20 }</small></div></div>
+              <div class="endpoint-row"><span class="endpoint-method">POST</span><div><div class="endpoint-path">/api/v1/big-odd/rounds</div><small class="endpoint-auth">Bearer API key · body: { "limit": 20 }</small></div></div>
+            </div>
+          </article>
+
+          <article class="endpoint-card">
+            <div class="endpoint-card-head"><div><h3>API keys & usage</h3><p>Developer-console account operations.</p></div><span class="health-badge"><i></i> Session</span></div>
+            <div class="endpoint-list">
+              <div class="endpoint-row"><span class="endpoint-method">GET</span><div><div class="endpoint-path">/api/keys</div><small class="endpoint-auth">Authenticated user session</small></div></div>
+              <div class="endpoint-row"><span class="endpoint-method">GET</span><div><div class="endpoint-path">/api/keys/usage</div><small class="endpoint-auth">Authenticated user session</small></div></div>
+              <div class="endpoint-row"><span class="endpoint-method">POST</span><div><div class="endpoint-path">/api/keys</div><small class="endpoint-auth">Authenticated user session</small></div></div>
+              <div class="endpoint-row"><span class="endpoint-method">GET</span><div><div class="endpoint-path">/api/keys/:id/secret</div><small class="endpoint-auth">Authenticated user session</small></div></div>
+              <div class="endpoint-row"><span class="endpoint-method">POST</span><div><div class="endpoint-path">/api/keys/:id/revoke</div><small class="endpoint-auth">Authenticated user session</small></div></div>
+            </div>
+          </article>
+
+          <article class="endpoint-card">
+            <div class="endpoint-card-head"><div><h3>Subscription & mail</h3><p>Account subscription and routed messaging.</p></div><span class="health-badge"><i></i> Session</span></div>
+            <div class="endpoint-list">
+              <div class="endpoint-row"><span class="endpoint-method">GET</span><div><div class="endpoint-path">/api/payments/subscription</div><small class="endpoint-auth">Authenticated user session</small></div></div>
+              <div class="endpoint-row"><span class="endpoint-method">POST</span><div><div class="endpoint-path">/api/payments/cancel</div><small class="endpoint-auth">Authenticated user session</small></div></div>
+              <div class="endpoint-row"><span class="endpoint-method">POST</span><div><div class="endpoint-path">/api/mail/contact</div><small class="endpoint-auth">Authenticated user session</small></div></div>
+              <div class="endpoint-row"><span class="endpoint-method">POST</span><div><div class="endpoint-path">/api/mail/security/login</div><small class="endpoint-auth">Authenticated user session</small></div></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="endpoint-card">
+          <div class="endpoint-card-head"><div><h3>WebSocket / Real-time</h3><p>Connect directly to the Game API real-time server.</p></div><span class="health-badge"><i></i> Live</span></div>
+          <div class="endpoint-base-grid">
+            <div class="endpoint-base"><span>WEBSOCKET URL</span><code>wss://api.game-api.online/realtime</code></div>
+            <div class="endpoint-base"><span>DEFAULT CHANNEL</span><code>crash_rounds</code></div>
+          </div>
+          <div class="endpoint-flow" style="margin-top:14px">
+            <div class="endpoint-step"><strong>01</strong><b>Connect</b><span>Open the WebSocket URL.</span></div>
+            <div class="endpoint-step"><strong>02</strong><b>Authenticate</b><span>Send an auth message with your API key when authentication is required.</span></div>
+            <div class="endpoint-step"><strong>03</strong><b>Subscribe</b><span>Use crash_rounds or big_odd_rounds.</span></div>
+            <div class="endpoint-step"><strong>04</strong><b>Receive</b><span>Live round events are pushed by the server.</span></div>
+          </div>
+        </section>
+
+        <section class="endpoint-code">
+          <div class="endpoint-code-head">HTTPS REQUEST · CRASH ROUNDS</div>
+          <pre>POST https://api.game-api.online/api/v1/crash/rounds
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "limit": 20
+}</pre>
+        </section>
+
+        <section class="endpoint-code">
+          <div class="endpoint-code-head">WEBSOCKET · JAVASCRIPT</div>
+          <pre>const socket = new WebSocket("wss://api.game-api.online/realtime");
+
+socket.onopen = () =&gt; {
+  socket.send(JSON.stringify({
+    type: "auth",
+    apiKey: "YOUR_API_KEY"
+  }));
+};
+
+socket.onmessage = (event) =&gt; {
+  const message = JSON.parse(event.data);
+  console.log(message);
+};</pre>
+        </section>
+
+        <div class="endpoint-note"><b>Security:</b> keep production API secrets on a trusted backend. Do not expose a secret API key in public browser code. The WebSocket server supports authenticated connections and read-only real-time subscriptions.</div>
+
+        <section class="endpoint-card">
+          <div class="endpoint-card-head"><div><h3>Common WebSocket messages</h3><p>Messages supported by the real-time server.</p></div></div>
+          <div class="endpoint-list">
+            <div class="endpoint-row"><span class="endpoint-method ws">EVENT</span><div><div class="endpoint-path">connected</div><small class="endpoint-auth">Initial connection message</small></div></div>
+            <div class="endpoint-row"><span class="endpoint-method ws">EVENT</span><div><div class="endpoint-path">authenticated</div><small class="endpoint-auth">API key accepted</small></div></div>
+            <div class="endpoint-row"><span class="endpoint-method ws">EVENT</span><div><div class="endpoint-path">crash_status</div><small class="endpoint-auth">Betting, running and crash state</small></div></div>
+            <div class="endpoint-row"><span class="endpoint-method ws">SEND</span><div><div class="endpoint-path">ping</div><small class="endpoint-auth">Returns pong</small></div></div>
+            <div class="endpoint-row"><span class="endpoint-method ws">SEND</span><div><div class="endpoint-path">subscribe</div><small class="endpoint-auth">Channels: crash_rounds, big_odd_rounds</small></div></div>
+            <div class="endpoint-row"><span class="endpoint-method ws">SEND</span><div><div class="endpoint-path">unsubscribe</div><small class="endpoint-auth">Remove a channel subscription</small></div></div>
+          </div>
+        </section>
+      </div>`;
+  }
+
   function genericContent(key){
     if(key==="overview") return overviewContent();
     if(key==="usage") return usageContent();
